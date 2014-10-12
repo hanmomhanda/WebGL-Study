@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang='ko'>
+<head>
+<meta charset="UTF-8">
+<title>Learning WebGL &mdash; lesson 1</title>
+<script type="text/javascript" src="lib/glMatrix-0.9.5.min.js"></script>
+</head>
+<body>
+<canvas id="lesson01-canvas" style="border: none;" width="1260" height="600"></canvas>
+<script id="shader-fs" type="x-shader/x-fragment">
+precision mediump float;
+
+void main(void) {
+    gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);
+}
+</script>
+<script id="shader-vs" type="x-shader/x-vertex">
+attribute vec3 aVertexPosition;
+
+uniform mat4 uMVMatrix;
+uniform mat4 uPMatrix;
+
+uniform vec4 aColor;
+varying vec4 vColor;
+
+void main(void) {
+    vColor = aColor;
+    gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+}
+</script>
+<script type='text/javascript'>
+(function() {
+// WebGL 소스는
+//   Host Code
+//   WebGL 설정
+//   그릴 Shape 작성
+//   그리는 방법 작성
+//   Shader Program 구성
+// 의 순서로 작성하는 것이 자연스러워 보인다.
+
+// Host 코드 실행
+webGLStart();
+
+////////////////////////////
+// Host 코드 부터 짜보자.
+function webGLStart() {
+    var canvas = document.getElementById("lesson01-canvas");
+    
+    // WebGL Context 초기 설정
+    initGL(canvas);
+    
+    // Shader 초기 설정
+    initShaders();
+    
+    // Buffer 초기 설정
+    initBuffers();
+
+    // http://www.khronos.org/opengles/sdk/docs/man31/html/glClearColor.xhtml
+    // Color Buffer를 위한 clear 변수 지정
+    // WebGL 영역 검게 초기화
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    
+    // http://www.khronos.org/opengles/sdk/docs/man31/html/glEnable.xhtml
+    // 서버사이드 GL 처리 가능하게 지정
+    // DEPTH_TEST를 WebGL에게 위임
+    gl.enable(gl.DEPTH_TEST);
+
+    // 실제 렌더링
+    setInterval(drawScene, 16);
+}
+
+////////////////////////////
+// WebGL 영역 초기 설정
+// WebGL 변수, 일단 공용변수로;;
+var gl
+;
+function initGL(canvas) {
+    try {
+        // canvas에서 WebGL 컨텍스트 받아오고
+        gl=canvas.getContext('webgl')||canvas.getContext("experimental-webgl");
+        // canvas의 width, height로 WebGL의 크기 설정
+        gl.viewportWidth = canvas.width;        
+        gl.viewportHeight = canvas.height;
+    } catch(e) {
+        // 두 개의 shader 선언 <script>가 이 <script>보다 아래에 있으면 에러 나더라
+    }
+    if (!gl) {
+        alert("Could not initialize WebGL, sorry :-( ");
+    }
+}
+
+////////////////////////////
+// WebGL에 그릴 Shape를 담을 Buffer 초기 설정
+// 삼각형을 그릴 Vertex Buffer Object(VBO), 일단 공용변수로;;
+var triangleVertexPositionBuffer
+;
+  
+function initBuffers() {
+    // WebGL을 통해 Buffer 생성
+    triangleVertexPositionBuffer = gl.createBuffer();
+    
+    // http://www.khronos.org/opengles/sdk/docs/man31/html/glBindBuffer.xhtml
+    // ARRAY_BUFFER에 bind 한다. Index Buffer Object는 ELEMENT_ARRAY_BUFFER에 bind 해야한다.
+    // OpenGL과 달리 ARRAY_BUFFER 와 ELEMENT_ARRAY_BUFFER 두 가지로만 bind 할 수 있다.
+    gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
+    
+    // 삼각형 vertex(우리말로 꼭지점 또는 절점) 좌표 설정, 기본 좌표계는 WebGL 영역 중심점을 원점으로 하는 직교좌표계임
+    var vertices = [
+         0.0,  1.0,  0.0,
+        -1.0, -1.0,  0.0,
+         1.0, -1.0,  0.0
+    ];
+    
+    // http://www.khronos.org/opengles/sdk/docs/man31/html/glBufferData.xhtml
+    // Buffer 객체에 vertex 데이터를 심어준다.
+    // STATIC_DRAW | STREAM_DRAW | DYNAMIC_DRAW 설명은 http://www.khronos.org/opengles/sdk/docs/man/xhtml/glBufferData.xml 참조
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.DYNAMIC_DRAW);
+    // 하나의 vertex를 구성하는 요소의 갯수
+    triangleVertexPositionBuffer.itemSize = 3;
+    // vertex의 갯수
+    triangleVertexPositionBuffer.numItems = 3;
+}
+
+////////////////////////////
+// Shape 실제 그리기
+// 애니메이션 효과를 위한 변수
+var time = 0;
+var xDir = yDir = 1; // 방향 지시 변수
+
+// 실제 Shape를 그리는 함수
+function drawScene() {
+
+var vel = 2
+  , pos = (time+=(0.25*xDir))
+  , dist = -40.0
+  , numOfObj = 1001 // Shape 갯수(열)
+  , numOfRow = 10  // Shape 갯수(행)
+  , vFieldOfView= 45 // 원근 투영 시야각
+  , minDistUnit = 0.1 // 원근 투영 근접 한계
+  , maxDistUnit = 100.0 // 원근 투영 원격 한계
+  , mvMatrix = mat4.create() // 이동 연산용 행렬
+  , pMatrix = mat4.create(); // 투영 행렬
+;
+
+    // http://www.khronos.org/opengles/sdk/docs/man/xhtml/glViewport.xml
+    // WebGL viewport 설정
+    gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+    
+    // http://www.khronos.org/opengles/sdk/docs/man/xhtml/glClear.xml
+    // Buffer 클리어
+    // 컬러를 쓸 수 있는 DEPTH_BUFFER이다. 라고 알려줌
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    // 원근 투영 행렬 생성
+    // 수직 시야각 45도, 캔버스 폭/높이 비율, 
+    // 0.1단위 미만으로 가까운 물체와 100단위 이상으로 먼 물체는 보이지 않게 한다.
+    // http://glmatrix.net/docs/2.2.0/symbols/mat4.html#.perspective 와는 파라미터가 다름
+    mat4.perspective(vFieldOfView, gl.viewportWidth / gl.viewportHeight, minDistUnit, maxDistUnit, pMatrix);   
+
+    for ( var j = 0 ; j < numOfRow ; j++ ) {
+        for ( var i = 0 ; i < numOfObj ; i++ ) {
+            mat4.identity(mvMatrix);
+
+            // 화면 특정 지점을 지나면 이동 방향 전환
+            if ( vel*pos > 30.0 ) xDir = -1;
+            if ( vel*pos < -10.0 ) xDir = 1;
+            
+            // 이동 변환 
+            // http://glmatrix.net/docs/2.2.0/symbols/mat4.html#.translate 와는 파라미터가 다름
+            mat4.translate(mvMatrix, [-numOfObj/2+i*2, (time-10+j*3+0.1*xDir), dist+time*(dist/15)]);
+        /* //회전, 도형 중심으로 회전인데, 회전 중심은 자동으로 계산되나?
+            mat4.rotateX(mvMatrix, 1);
+            mat4.rotateY(mvMatrix, 5);
+            mat4.rotateZ(mvMatrix, 10);
+        //*/
+        
+            // http://www.khronos.org/opengles/sdk/docs/man/xhtml/glBindBuffer.xml
+            // triangleVertexPositionBuffer가 VBO이므로 ARRAY_BUFFER에 bind
+            gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
+            
+            // http://www.khronos.org/opengles/sdk/docs/man/xhtml/glVertexAttribPointer.xml
+            // VBO 데이터를 shaderProgram의 속성으로 추가
+            gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, triangleVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);    
+
+            // http://www.khronos.org/opengles/sdk/docs/man31/html/glUniform.xhtml
+            // pMatrix를 shaderProgram.pMatrixUniform 속성에 추가하여 GPU에 전달
+            gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
+            // mvMatrix를 shaderProgram.mvMatrixUniform 속성에 추가하여 GPU에 전달
+            gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
+            
+            // http://www.khronos.org/opengles/sdk/docs/man31/html/glDrawArrays.xhtml
+            // 배열 데이터로 삼각형을 그린다
+            gl.drawArrays(gl.TRIANGLES, 0, triangleVertexPositionBuffer.numItems);
+        }
+    }
+}
+
+////////////////////////////
+// Shader Program 구성
+// 애니메이션 효과를 위한 변수
+var shaderProgram;
+// GPU에 데이터를 전달하는 수단인 shader program 구성
+function initShaders() {
+    // shader가 정의된 <script>의 id로 shader 객체를 얻어온다
+    var fragmentShader = getShader(gl, "shader-fs");
+    var vertexShader = getShader(gl, "shader-vs");
+
+    // WebGL을 통해 shader program 생성
+    shaderProgram = gl.createProgram();
+    
+    // shader program에 vertex shader를 싣는다
+    gl.attachShader(shaderProgram, vertexShader);
+    // shader program에 fragment shader를 싣는다
+    gl.attachShader(shaderProgram, fragmentShader);
+    
+    // http://www.khronos.org/opengles/sdk/docs/man31/html/glLinkProgram.xhtml
+    // shader program을 링크
+    gl.linkProgram(shaderProgram);
+
+    // 링크가 잘 되었는 지 확인
+    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+      alert("Could not initialise shaders");
+    }
+
+    // http://www.khronos.org/opengles/sdk/docs/man31/html/glUseProgram.xhtml    
+    // 현재 렌더링 상태에 shader program을 사용할 수 있도록 설치
+    gl.useProgram(shaderProgram);
+    
+    // http://www.khronos.org/opengles/sdk/docs/man/xhtml/glGetAttribLocation.xml
+    // 
+    shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+    gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+    
+    shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+    shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+    shaderProgram.color = gl.getUniformLocation(shaderProgram, "aColor");
+}
+
+// shader가 정의된 <script> 태그 안의 내용을 기준으로
+// shader 객체 생성, 컴파일 및 반환
+function getShader(gl, id) {
+    var shaderScript = document.getElementById(id);
+    if (!shaderScript) {
+        return null;
+    }
+
+    var str = "";
+    var k = shaderScript.firstChild;
+    while (k) {
+        if (k.nodeType == 3)
+            str += k.textContent;
+        k = k.nextSibling;
+    }
+
+    var shader;
+    if (shaderScript.type == "x-shader/x-fragment") {
+        shader = gl.createShader(gl.FRAGMENT_SHADER);
+    } else if (shaderScript.type == "x-shader/x-vertex") {
+        shader = gl.createShader(gl.VERTEX_SHADER);
+    } else {
+        return null;
+    }
+
+    gl.shaderSource(shader, str);
+    gl.compileShader(shader);
+
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        alert(gl.getShaderInfoLog(shader));
+        return null;
+    }
+
+    return shader;
+}
+
+})();
+</script>
+
+</body>
+</html>
