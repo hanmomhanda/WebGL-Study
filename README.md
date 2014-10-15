@@ -5,4 +5,4 @@
 <a href='http://hanmomhanda.github.io/WebGL-Study' target='_blank'>홈페이지</a>
 
 
-<a href='http://http://hanmomhanda.github.io/WebGL-Study/01-Drawing-a-rect.html' target='_blank'>Drawing a Rectangula</a>
+<a href='http://hanmomhanda.github.io/WebGL-Study/01-Drawing-a-rect.html' target='_blank'>Drawing a Rectangular</a>
