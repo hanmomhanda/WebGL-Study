@@ -31,23 +31,17 @@ void main(void) {
 }
 </script>
 <script>
-(function() {	
-
-	var modelViewMatrix, projectionMatrix, shaderProgram;
+;(function() {
 
 	var drawWebGL = function() {
-		var canvas, gl, rect;
+		var canvas, gl;
 		canvas = document.getElementById("webgl-canvas"),
-		gl = initWebGL(canvas),
-		rect = createRect(gl);
-
-		initViewport(gl, canvas);
-		initMatrices(canvas);
-		initShader(gl);
-		draw(gl, rect);
+		gl = getWebGLContext(canvas),
+		initViewport(gl, canvas),
+		draw(gl, canvas, createRect(gl), getShaderProgram(gl));
 	},
 
-	initWebGL = function(canvas) {
+	getWebGLContext = function(canvas) {
 		var gl, msg = "Your browser does not support WebGL, or it is not enabled by default.";
 	    try {
 	    		gl = canvas.getContext("experimental-webgl");
@@ -61,6 +55,10 @@ void main(void) {
 	    }
 
         return gl;  
+	},
+
+	initViewport = function(gl, canvas) {
+		gl.viewport(0, 0, canvas.width, canvas.height);
 	},
 
 	createRect = function(gl) {
@@ -88,19 +86,6 @@ void main(void) {
 		return rect;
 	},
 
-	initViewport = function(gl, canvas) {
-		gl.viewport(0, 0, canvas.width, canvas.height);
-	},
-
-	initMatrices = function(canvas) {
-		// Create a model view matrix with object at 0, 0, -3.333
-		modelViewMatrix = mat4.create();
-		mat4.translate(modelViewMatrix, modelViewMatrix, [0, 0, -3.333]);
-
-		// Create a project matrix with 45 degree field of view
-		projectionMatrix = mat4.create();
-		mat4.perspective(projectionMatrix, Math.PI / 4, canvas.width / canvas.height, 1, 10000);
-	},
 
 	// shader가 정의된 <script> 태그 안의 내용을 기준으로
 	// shader 객체 생성, 컴파일 및 반환
@@ -138,7 +123,7 @@ void main(void) {
 		return shader;
 	},
 
-	initShader = function(gl) {
+	getShaderProgram = function(gl) {
 		// load and compile the fragment and vertex shader
 		//var fragmentShader = getShader(gl, "fragmentShader");
 		//var vertexShader = getShader(gl, "vertexShader");
@@ -146,8 +131,9 @@ void main(void) {
 		// var vertexShader = createShader(gl, vertexShaderSource, "vertex");
 
 		// shader가 정의된 <script>의 id로 shader 객체를 얻어온다
-		var fragmentShader = getShader(gl, "shader-fs");
-		var vertexShader = getShader(gl, "shader-vs");
+		var fragmentShader = getShader(gl, "shader-fs"),
+			vertexShader = getShader(gl, "shader-vs"),
+			shaderProgram;
 
 		// link them together into a new program
 		shaderProgram = gl.createProgram();
@@ -165,16 +151,41 @@ void main(void) {
 
 		if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
 		    alert("Could not initialise shaders");
+			gl.deleteProgram(shaderProgram);
+			gl.deleteProgram(vertexShader);
+			gl.deleteProgram(fragmentShader);
+		    return null;
 		}
+
+		return shaderProgram;
 	},
 
-	draw = function(gl, objToDraw) {
+	getModelViewMatrix = function() {
+		// Create a model view matrix with object at 0, 0, -3.333
+		modelViewMatrix = mat4.create();
+		mat4.translate(modelViewMatrix, modelViewMatrix, [0, 0, -3.333]);
+		return modelViewMatrix;
+	},
+
+	getProjectionMatrix = function(canvas) {
+		// Create a project matrix with 45 degree field of view
+		var projectionMatrix = mat4.create();
+		mat4.perspective(projectionMatrix, Math.PI / 4, canvas.width / canvas.height, 1, 10000);
+		return projectionMatrix;
+	},
+
+	draw = function(gl, canvas, objToDraw, shaderProgram) {
+		var modelViewMatrix = getModelViewMatrix(),
+			projectionMatrix = getProjectionMatrix(canvas);
 		// clear the background (with black)
 		gl.clearColor(0.3, 0.3, 0.3, 1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT);
 
 		// set the shader to use
 		gl.useProgram(shaderProgram);
+
+		// 좌표계 이동
+		mat4.translate(modelViewMatrix, modelViewMatrix, [3.0, 0.0, 0.0]);
 
 		// connect up the shader parameters: vertex position and projection/model matrices
 		// set the vertex buffer to be drawn
