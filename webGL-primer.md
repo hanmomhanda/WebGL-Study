@@ -79,7 +79,7 @@
     - program.uniform변수에 넣어진 값은 program을 통해 GPU에 전달된다.
 - vertexAttribPointer(program.uniform변수, vertSize, 변수타입, boolean, stride, offset)
     - 현재 ARRAY_BUFFER target에 바인딩된 WebGL객체를 program.uniform변수에 넣어준다.
-    - vertSize는 primitive로 trianble을 사용하면 3이다.
+    - vertSize는 3차원 좌표계를 사용하면 3이다.
     - 변수 타입은 vertexBuffer안에 있는 배열 원소의 데이터 타입(gl.FLOAT 등)
     - stride는 0~255 사이의 값, vertSize의 배수여야 한다. 뭔지는 모르겠다.
     - offset는 vertSize의 배수여야 한다. 뭔지는 모르겠다.
