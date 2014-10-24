@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang='ko'>
+<head>
+<meta charset="UTF-8">
+<title>WebGL - Drawing a Rectangular</title>
+<script type="text/javascript" src="lib/gl-matrix-min.js"></script>
+</head>
+<body>
+<canvas id="webgl-canvas" style="border: none;" width="800" height="200"></canvas>
+<script id="shader-fs" type="x-shader/x-fragment">
+precision mediump float;
+
+void main(void) {
+    gl_FragColor = vec4(0.7, 0.3, 1.0, 1.0);
+}
+</script>
+<script id="shader-vs" type="x-shader/x-vertex">
+// 직사각형 geometry를 구성하는 vertex buffer
+attribute vec3 aVertexPosition;
+
+// 
+uniform mat4 uMVMatrix;
+uniform mat4 uPMatrix;
+
+uniform vec4 aColor;
+varying vec4 vColor;
+
+void main(void) {
+    vColor = aColor;
+    gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+}
+</script>
+<script>
+;(function() {
+
+	var drawWebGL = function() {
+		var canvas, gl;
+		canvas = document.getElementById("webgl-canvas"),
+		gl = getWebGLContext(canvas),
+		initViewport(gl, canvas),
+		// clear the background (with black)
+		gl.clearColor(0.3, 0.3, 0.3, 1.0),
+		gl.clear(gl.COLOR_BUFFER_BIT),		
+		draw(gl, canvas, createRect(gl), getShaderProgram(gl), 3.0);
+		draw(gl, canvas, createTri(gl), getShaderProgram(gl), -1.5);
+	},
+
+	getWebGLContext = function(canvas) {
+		var gl, msg = "Your browser does not support WebGL, or it is not enabled by default.";
+	    try {
+	    		gl = canvas.getContext("experimental-webgl");
+	    } catch (e) {
+	    		msg = "Error creating WebGL Context!: " + e.toString();
+	    }
+	
+	    if (!gl) {
+			alert(msg);
+	    		throw new Error(msg);
+	    }
+
+        return gl;  
+	},
+
+	initViewport = function(gl, canvas) {
+		gl.viewport(0, 0, canvas.width, canvas.height);
+	},
+
+	createRect = function(gl) {
+		var vertexBuffer = gl.createBuffer(),
+			// vertices = [
+			// 	 .7,  .3, 0.0,
+			// 	-.7,  .3, 0.0,
+			// 	 .7, -.3, 0.0,
+			// 	-.7, -.3, 0.0
+			// ],
+			vertices = [
+				 .5,  .5, 0.0,
+				-.5,  .5, 0.0,
+				 .5, -.5, 0.0,
+				-.5, -.5, 0.0
+			],
+			rect = {
+				buffer : vertexBuffer,
+				vertSize : 3,
+				nVerts : 4,
+				primtype : gl.TRIANGLE_STRIP
+			};
+		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+		return rect;
+	},
+
+	createTri = function(gl) {
+		var vertexBuffer = gl.createBuffer(),
+			// vertices = [
+			// 	 .7,  .3, 0.0,
+			// 	-.7,  .3, 0.0,
+			// 	 .7, -.3, 0.0,
+			// 	-.7, -.3, 0.0
+			// ],
+			vertices = [
+				   0,   1.0, 0.0,
+				-1.0,  -1.0, 0.0,
+				 1.0,  -1.0, 0.0,
+			],
+			tri = {
+				buffer : vertexBuffer,
+				vertSize : 3,
+				nVerts : 3,
+				primtype : gl.TRIANGLES
+			};
+		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+		return tri;
+	},
+
+	// shader가 정의된 <script> 태그 안의 내용을 기준으로
+	// shader 객체 생성, 컴파일 및 반환
+	getShader = function(gl, id) {
+		var shaderScript = document.getElementById(id);
+		if (!shaderScript) {
+			return null;
+		}
+
+		var str = "";
+		var k = shaderScript.firstChild;
+		while (k) {
+			if (k.nodeType == 3)
+			str += k.textContent;
+			k = k.nextSibling;
+		}
+
+		var shader;
+		if (shaderScript.type == "x-shader/x-fragment") {
+			shader = gl.createShader(gl.FRAGMENT_SHADER);
+		} else if (shaderScript.type == "x-shader/x-vertex") {
+			shader = gl.createShader(gl.VERTEX_SHADER);
+		} else {
+			return null;
+		}
+
+		gl.shaderSource(shader, str);
+		gl.compileShader(shader);
+
+		if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+			alert(gl.getShaderInfoLog(shader));
+			return null;
+		}
+
+		return shader;
+	},
+
+	getShaderProgram = function(gl) {
+		// load and compile the fragment and vertex shader
+		//var fragmentShader = getShader(gl, "fragmentShader");
+		//var vertexShader = getShader(gl, "vertexShader");
+		// var fragmentShader = createShader(gl, fragmentShaderSource, "fragment");
+		// var vertexShader = createShader(gl, vertexShaderSource, "vertex");
+
+		// shader가 정의된 <script>의 id로 shader 객체를 얻어온다
+		var fragmentShader = getShader(gl, "shader-fs"),
+			vertexShader = getShader(gl, "shader-vs"),
+			shaderProgram;
+
+		// link them together into a new program
+		shaderProgram = gl.createProgram();
+		gl.attachShader(shaderProgram, vertexShader);
+		gl.attachShader(shaderProgram, fragmentShader);
+		gl.linkProgram(shaderProgram);
+
+		// get pointers to the shader params
+		shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+		gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
+		shaderProgram.projectionMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+		shaderProgram.modelViewMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+
+
+		if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+		    alert("Could not initialise shaders");
+			gl.deleteProgram(shaderProgram);
+			gl.deleteProgram(vertexShader);
+			gl.deleteProgram(fragmentShader);
+		    return null;
+		}
+
+		return shaderProgram;
+	},
+
+	getModelViewMatrix = function() {
+		// Create a model view matrix with object at 0, 0, -3.333
+		modelViewMatrix = mat4.create();
+		mat4.translate(modelViewMatrix, modelViewMatrix, [0, 0, -3.333]);
+		return modelViewMatrix;
+	},
+
+	getProjectionMatrix = function(canvas) {
+		// Create a project matrix with 45 degree field of view
+		var projectionMatrix = mat4.create();
+		mat4.perspective(projectionMatrix, Math.PI / 4, canvas.width / canvas.height, 1, 10000);
+		return projectionMatrix;
+	},
+
+	draw = function(gl, canvas, objToDraw, shaderProgram, transX) {
+		var modelViewMatrix = getModelViewMatrix(),
+			projectionMatrix = getProjectionMatrix(canvas);		
+
+		// set the shader to use
+		gl.useProgram(shaderProgram);
+
+		// 좌표계 이동
+		mat4.translate(modelViewMatrix, modelViewMatrix, [transX, 0.0, 0.0]);
+
+		// connect up the shader parameters: vertex position and projection/model matrices
+		// set the vertex buffer to be drawn
+		gl.bindBuffer(gl.ARRAY_BUFFER, objToDraw.buffer);
+		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, objToDraw.vertSize, gl.FLOAT, false, 0, 0);
+		gl.uniformMatrix4fv(shaderProgram.projectionMatrixUniform, false, projectionMatrix);
+		gl.uniformMatrix4fv(shaderProgram.modelViewMatrixUniform, false, modelViewMatrix);
+
+		// draw the object
+		gl.drawArrays(objToDraw.primtype, 0, objToDraw.nVerts);
+	};
+
+	drawWebGL();
+})();
+</script>
+</body>
+</html>
