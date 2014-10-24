@@ -6,3 +6,5 @@
 
 
 <a href='http://hanmomhanda.github.io/WebGL-Study/01-Drawing-a-rect.html' target='_blank'>Drawing a Rectangular</a>
+
+<a href='http://hanmomhanda.github.io/WebGL-Study/02-Drawing-a-rect-and-a-triangle.html' target='_blank'>Drawing a Rectangular and a Triangle</a>
