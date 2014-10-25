@@ -1,5 +1,17 @@
 # WebGL Primer
 
+## 큰 흐름
+
+- canvas에서 WebGL context를 얻어와서
+- WebGL context내의 여러 상수, 변수, 함수를 써서 그릴 정보를 shaderProgram에 담고
+- drayArrays()나 drayElements()로 shaderProgram을 GPU에 보내면 GPU가 shaderProgram을 실행하면서 렌더링
+
+## 정보 전달 흐름
+
+- gl.bindBuffer(), gl.bufferData()로 그릴 정보(geometry, 색상, texture, ...)를 WebGL context에 저장
+- gl.bindBuffer(), gl.vertexAttribPointer()로 그릴 정보를 shader내에 선언된 변수에 저장
+- drayArrays()나 drayElements()로 shaderProgram을 GPU에 보내면 GPU가 shaderProgram을 실행하면서 렌더링
+
 ## 용어
 
 - vertex
