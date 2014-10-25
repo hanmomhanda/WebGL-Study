@@ -20,8 +20,6 @@
 	>3D 공간에서 위치를 나타내는 vertices로 구성되는 하나 혹은 그 이상의 다각형으로 구성되는 객체 	
 	>*Programming 3D Applications with HTML5 and WebGL*
 
-- 
-
 - shader
 
     >GPU에서 구동되는 함수
@@ -66,7 +64,7 @@
     - vertex shader에서는 write도 가능, fragment shader에서는 read-only
 
 
-## WebGL Context 주요 함수
+## WebGL Context 주요 함수 - 파악 중임
 
 - createBuffer()
     - 버퍼 생성
@@ -74,16 +72,36 @@
     - ARRAY_BUFFER의 target으로 버퍼를 지정한다.
 - bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
     - 현재 ARRAY_BUFFER target에 데이터를 넣어준다.
-- uniformMatrix4fv(program.uniform변수, boolean, 행렬)
-    - 행렬의 값을 전치(transpose, 행/열 변환) 여부에 따라 처리해서 program.uniform변수 에 넣어준다.
-    - program.uniform변수에 넣어진 값은 program을 통해 GPU에 전달된다.
-- vertexAttribPointer(program.uniform변수, vertSize, 변수타입, boolean, stride, offset)
-    - 현재 ARRAY_BUFFER target에 바인딩된 WebGL객체를 program.uniform변수에 넣어준다.
+- getAttribLocation(shaderProgram, attribute변수명)
+    - https://www.khronos.org/opengles/sdk/docs/man/xhtml/glGetAttribLocation.xml
+    - shaderProgram에 link된 vertex shader 내에서 attribute변수명 변수가 선언된 순서값(0부터 시작하는 index) 반환
+    - 반환된 index 값은 나중에 vertexAttribPointer()의 첫번째 인자로 사용
+- enableVertexAttribArray(attribute변수index)
+    - https://www.khronos.org/opengles/sdk/docs/man/xhtml/glEnableVertexAttribArray.xml
+    - If enabled, the values in the generic vertex attribute array will be accessed and used for rendering when calls are made to vertex array commands such as glDrawArrays or glDrawElements.
+    - attribute변수index : getAttribLocation(shaderProgram, attribute변수명)의 반환값. 0이면 shader에서 첫번째로 선언된 attribute 변수에 할당될 배열을 렌더링 될 수 있게 한다.
+- getUniformLocation(shaderProgram, attribute변수명)
+    - https://www.khronos.org/opengles/sdk/docs/man/xhtml/glGetUniformLocation.xml
+    - 위 링크의 내용과 달라 webGL에서는 integer가 아닌 WebGLUniformLocation() 라는 함수 객체 반환
+    - 반환된 index 값은 나중에 uniformMatrix4fv()의 첫번째 인자로 사용
+- vertexAttribPointer(attribute변수index, vertSize, 변수타입, boolean, stride, offset)
+    - https://www.khronos.org/opengles/sdk/docs/man/xhtml/glVertexAttribPointer.xml
+    - attribute변수index에 해당하는 변수에 저장된 배열(바로 이 함수의 호출문 앞에서 gl.bindBuffe()로 바인딩 된 배열)을 렌더링 할 수 있도록, vertSize, 변수타입, 정규화여부, stride, offset 값을 지정해준다.
+    - program.attribute변수에 넣어진 값은 program을 통해 GPU에 전달된다.
     - vertSize는 3차원 좌표계를 사용하면 3이다.
     - 변수 타입은 vertexBuffer안에 있는 배열 원소의 데이터 타입(gl.FLOAT 등)
-    - stride는 0~255 사이의 값, vertSize의 배수여야 한다. 뭔지는 모르겠다.
-    - offset는 vertSize의 배수여야 한다. 뭔지는 모르겠다.
-- drawArrays
+    - boolean은 고정소수점 데이터의 정규화 여부. 부호 있는 숫자는 [-1, 1] 사이 값으로 부호 없는 숫자는 [0, 1] 사이 값으로 정규화
+    - stride는 연속된 generic vertex attribute 사이의 byte offset
+    - offset는 배열에 있는 첫번째 generic vertex attribute의 첫번째 컴포넌트에 대한 인덱스 값
+- uniformMatrix4fv(program.uniform변수, boolean, 행렬)
+    - openGL 스펙 링크가 없음. webGL에만 있는 듯.
+    - 행렬의 값을 전치(transpose, 행/열 변환) 여부에 따라 처리해서 program.uniform변수 에 넣어준다.
+    - program.uniform변수에 넣어진 값은 program을 통해 GPU에 전달된다.
+- drawArrays(primitiveType, startIndex, nVerts)
+    - https://www.khronos.org/opengles/sdk/docs/man/xhtml/glDrawArrays.xml
+    - primitiveType : [GL_POINTS | GL_LINE_STRIP | GL_LINE_LOOP | GL_LINES | GL_TRIANGLE_STRIP | GL_TRIANGLE_FAN | GL_TRIANGLES]
+    - startIndex : enabled 된 배열의 시작 인덱스
+    - nVerts : 꼭지점 수, 삼각형은 3, 사각형은 4...
 - drawElements
 
 
