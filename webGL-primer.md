@@ -86,7 +86,7 @@
     - 반환된 index 값은 나중에 uniformMatrix4fv()의 첫번째 인자로 사용
 - vertexAttribPointer(attribute변수index, vertSize, 변수타입, boolean, stride, offset)
     - https://www.khronos.org/opengles/sdk/docs/man/xhtml/glVertexAttribPointer.xml
-    - attribute변수index에 해당하는 변수에 저장된 배열(바로 이 함수의 호출문 앞에서 gl.bindBuffe()로 바인딩 된 배열)을 렌더링 할 수 있도록, vertSize, 변수타입, 정규화여부, stride, offset 값을 지정해준다.
+    - attribute변수index에 해당하는 변수에 저장된 배열(이 함수의 호출문 바로 앞에서 gl.bindBuffer()로 바인딩 된 배열)을 렌더링 할 수 있도록, vertSize, 변수타입, 정규화여부, stride, offset 값을 지정해준다.
     - program.attribute변수에 넣어진 값은 program을 통해 GPU에 전달된다.
     - vertSize는 3차원 좌표계를 사용하면 3이다.
     - 변수 타입은 vertexBuffer안에 있는 배열 원소의 데이터 타입(gl.FLOAT 등)
