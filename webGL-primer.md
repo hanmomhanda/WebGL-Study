@@ -22,13 +22,13 @@
 
 - shader
 
-    >GPU에서 구동되는 함수
+    >GPU에서 구동되는 함수로 버퍼에 있는 데이터를 그리는 방법에 대한 내용이 포함된다.
     
-    > `<script>` 태그 내에 문자열로 작성된 shader 소스 코드를 webGL context가 컴파일하여 GPU에서 구동된다.
+    > `<script>` 태그 내에 문자열로 작성된 shader 소스 코드를 webGL context가 컴파일하고, 여러개의 shader가 program에 link되어 GPU에서 구동된다.
 
 - program
 
-    >CPU의 정보를 담아 GPU에 전달하는 역할
+    >WebGL context가 컴파일한 여러 개의 shader를 링크하고, CPU에서 지정해준 정보와 링크한 shader를 GPU에 전달하는 역할
     >
     >program에 shader도 붙이고, vertexPosition, matrix, color도 program의 property 값으로 지정하고, GPU는 program에서 해당 정보를 읽어와서 처리  
 
@@ -38,7 +38,7 @@
 
     >실제 그래픽 카드의 메모리에 저장
 
-## Variable Qualifiers
+## Shader Variable Qualifiers
 
 참조 : http://www.lighthouse3d.com/tutorials/glsl-tutorial/data-types-and-variables/
 
@@ -92,7 +92,7 @@
     - 반환된 index 값은 나중에 uniformMatrix4fv()의 첫번째 인자로 사용
 - vertexAttribPointer(attribute변수index, vertSize, 변수타입, boolean, stride, offset)
     - https://www.khronos.org/opengles/sdk/docs/man/xhtml/glVertexAttribPointer.xml
-    - attribute변수index에 해당하는 변수에 저장된 배열(이 함수의 호출문 바로 앞에서 gl.bindBuffer()로 바인딩 된 배열)을 렌더링 할 수 있도록, vertSize, 변수타입, 정규화여부, stride, offset 값을 지정해준다.
+    - attribute변수index에 해당하는 변수에 현재 바인딩 되어 있는 배열(이 함수의 호출문 앞에서 gl.bindBuffer()로 바인딩 된 배열)을 저장하고, 해당 배열 정보를 바탕으로 렌더링 할 수 있도록, vertSize, 변수타입, 정규화여부, stride, offset 값을 지정해준다.
     - program.attribute변수에 넣어진 값은 program을 통해 GPU에 전달된다.
     - vertSize는 3차원 좌표계를 사용하면 3이다.
     - 변수 타입은 vertexBuffer안에 있는 배열 원소의 데이터 타입(gl.FLOAT 등)
@@ -103,8 +103,13 @@
     - openGL 스펙 링크가 없음. webGL에만 있는 듯.
     - 행렬의 값을 전치(transpose, 행/열 변환) 여부에 따라 처리해서 program.uniform변수 에 넣어준다.
     - program.uniform변수에 넣어진 값은 program을 통해 GPU에 전달된다.
+- useProgram(shaderProgram)
+    - https://www.khronos.org/opengles/sdk/docs/man/xhtml/glUseProgram.xml
+    - 현재 렌더링 상태에 shaderProgram을 설치
+    - drayArrays()가 호출되면 shaderProgram이 GPU에 전달되어 GPU가 shaderProgram을 실행한다.(이건 추측)
 - drawArrays(primitiveType, startIndex, nVerts)
     - https://www.khronos.org/opengles/sdk/docs/man/xhtml/glDrawArrays.xml
+    - 현재 WebGL context에 있는 정보를 토대로 렌더링한다.(추측 GPU로 shaderProgram을 전달한다)
     - primitiveType : [GL_POINTS | GL_LINE_STRIP | GL_LINE_LOOP | GL_LINES | GL_TRIANGLE_STRIP | GL_TRIANGLE_FAN | GL_TRIANGLES]
     - startIndex : enabled 된 배열의 시작 인덱스
     - nVerts : 꼭지점 수, 삼각형은 3, 사각형은 4...
