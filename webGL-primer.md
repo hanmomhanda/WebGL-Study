@@ -67,11 +67,17 @@
 ## WebGL Context 주요 함수 - 파악 중임
 
 - createBuffer()
-    - 버퍼 생성
-- bindBuffer(gl.ARRAY_BUFFER, 버퍼)
-    - ARRAY_BUFFER의 target으로 버퍼를 지정한다.
-- bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
-    - 현재 ARRAY_BUFFER target에 데이터를 넣어준다.
+    - https://www.khronos.org/opengles/sdk/docs/man/xhtml/glGenBuffers.xml
+    - 버퍼 객체 생성
+- bindBuffer(target, bufName)
+    - https://www.khronos.org/opengles/sdk/docs/man/xhtml/glBindBuffer.xml
+    - 버퍼 객체의 이름(bufName)을 target에 바인딩. target에 새로운 버퍼 객체 이름을 바인딩하기 전까지는 해당 target에 바인딩 되어있는 버퍼 객체가 계속 유효. 즉, 상태머신과 유사하게 동작
+    - target : [gl.ARRAY_BUFFER | gl.ELEMENT_ARRAY_BUFFER]으로 버퍼를 지정한다.
+    - bufName : 버퍼 객체 이름
+    - index buffer 객체는 gl.ELEMENT_ARRAY_BUFFER에 바인딩해야 한다. 
+- bufferData(target, new Float32Array(vertices), gl.STATIC_DRAW)
+    - https://www.khronos.org/opengles/sdk/docs/man/xhtml/glBufferData.xml
+    - 현재 target에 바인딩 된 버퍼 객체를 위한 데이터 저장소를 만들고, 두 번째 인자로 받은 데이터를 새로 만든 데이터 저장소에 저장한다.
 - getAttribLocation(shaderProgram, attribute변수명)
     - https://www.khronos.org/opengles/sdk/docs/man/xhtml/glGetAttribLocation.xml
     - shaderProgram에 link된 vertex shader 내에서 attribute변수명 변수가 선언된 순서값(0부터 시작하는 index) 반환
@@ -82,7 +88,7 @@
     - attribute변수index : getAttribLocation(shaderProgram, attribute변수명)의 반환값. 0이면 shader에서 첫번째로 선언된 attribute 변수에 할당될 배열을 렌더링 될 수 있게 한다.
 - getUniformLocation(shaderProgram, attribute변수명)
     - https://www.khronos.org/opengles/sdk/docs/man/xhtml/glGetUniformLocation.xml
-    - 위 링크의 내용과 달라 webGL에서는 integer가 아닌 WebGLUniformLocation() 라는 함수 객체 반환
+    - 위 링크의 내용과 달라 webGL에서는 integer가 아닌 WebGLUniformLocation 라는 객체 반환
     - 반환된 index 값은 나중에 uniformMatrix4fv()의 첫번째 인자로 사용
 - vertexAttribPointer(attribute변수index, vertSize, 변수타입, boolean, stride, offset)
     - https://www.khronos.org/opengles/sdk/docs/man/xhtml/glVertexAttribPointer.xml
@@ -108,9 +114,19 @@
 ## 주요 상수
 
 - gl.ARRAY_BUFFER
-
+    - index buffer 외의 버퍼를 바인딩 할 수 있는 target
+- gl.STREAM_DRAW
+    - https://www.khronos.org/opengles/sdk/docs/man/xhtml/glBufferData.xml
+    - gl.bufferData()의 세 번째 파라미터인 usage에 사용되며 저장된 데이터가 어떤 방식으로 쓰이는 지 지정해주며, 버퍼 객체 성능에 큰 영향을 미친다 
+    - 버퍼 데이터 저장소에 있는 데이터를 한 번 수정해서 많아야 몇 번 사용하는 경우
 - gl.STATIC_DRAW
-
+    - https://www.khronos.org/opengles/sdk/docs/man/xhtml/glBufferData.xml
+    - gl.bufferData()의 세 번째 파라미터인 usage에 사용되며 저장된 데이터가 어떤 방식으로 쓰이는 지 지정해주며, 버퍼 객체 성능에 큰 영향을 미친다 
+    - 버퍼 데이터 저장소에 있는 데이터를 한 번 수정해서 여러번 사용하는 경우
+- gl.DYNAMIC_DRAW
+    - https://www.khronos.org/opengles/sdk/docs/man/xhtml/glBufferData.xml
+    - gl.bufferData()의 세 번째 파라미터인 usage에 사용되며 저장된 데이터가 어떤 방식으로 쓰이는 지 지정해주며, 버퍼 객체 성능에 큰 영향을 미친다 
+    - 버퍼 데이터 저장소에 있는 데이터를 여러 번 수정해서 여러번 사용하는 경우
 - gl.FRAGMENT_SHADER
 
 - gl.VERTEX_SHADER
