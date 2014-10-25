@@ -9,28 +9,28 @@
 ## 정보 전달 흐름
 
 - gl.bindBuffer(), gl.bufferData()로 그릴 정보(geometry, 색상, texture, ...)를 WebGL context에 저장
-- gl.bindBuffer(), gl.vertexAttribPointer()로 그릴 정보를 shader내에 선언된 변수에 저장
+- gl.bindBuffer(), gl.vertexAttribPointer()로 WebGL context에 저장된 그릴 정보를 shader내에 선언된 변수에 저장
 - drayArrays()나 drayElements()로 shaderProgram을 GPU에 보내면 GPU가 shaderProgram을 실행하면서 렌더링
 
 ## 용어
 
 - vertex
 
-	>3D 공간에서의 꼭지점 
-	>하나의 vertex는 x, y, z 좌표값으로 구성
+    >3D 공간에서의 꼭지점 
+    >하나의 vertex는 x, y, z 좌표값으로 구성
 
 - fragment
 
-	>vertex로 표현되는 geometry가 아닌 모든 것 
-	>색, 텍스쳐 등
+    >vertex로 표현되는 geometry가 아닌 모든 것 
+    >색, 텍스쳐 등
 
 - Mesh
 
-	>'그물망'이라는 뜻으로, 3D 공간에서 사물을 표현하는 객체로 기하 정보(geometry)와 표면 정보(surface)로 구성된다.
+     >'그물망'이라는 뜻으로, 3D 공간에서 사물을 표현하는 객체로 기하 정보(geometry)와 표면 정보(surface)로 구성된다.
 
-	>A mesh is an object composed of one or more polygonal shapes, constructed out of vertices (x, y, z triples) defining coordinate positions in 3D space.
-	>3D 공간에서 위치를 나타내는 vertices로 구성되는 하나 혹은 그 이상의 다각형으로 구성되는 객체 	
-	>*Programming 3D Applications with HTML5 and WebGL*
+    >A mesh is an object composed of one or more polygonal shapes, constructed out of vertices (x, y, z triples) defining coordinate positions in 3D space.
+    >3D 공간에서 위치를 나타내는 vertices로 구성되는 하나 혹은 그 이상의 다각형으로 구성되는 객체 	
+    >*Programming 3D Applications with HTML5 and WebGL*
 
 - shader
 
