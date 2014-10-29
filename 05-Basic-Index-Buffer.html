@@ -80,15 +80,15 @@ void main(void) {
 			// 	 0.5, -0.5,  0.0,
 			// 	-0.5, -0.5,  0.0
 			// ],
-			vertices = [ // 위의 배열에서 3행과 4행을 바꿔서 아래같이 하면 사각형이 그려지지 않는다.
+			vertices = [ // 위의 배열에서 3행과 4행을 바꿔서 아래같이 하면, 인덱스 버퍼의 도움 없이는 사각형이 그려지지 않는다.
 				 0.5,  0.5,  0.0,
 				-0.5,  0.5,  0.0,				 
 				-0.5, -0.5,  0.0,
 				0.5, -0.5,  0.0
 			],
-			indices = [ // 인덱스 배열 내의 
-				0, 1, 2,
-				3, 2, 0
+			indices = [ // 인덱스 배열 내의 원소를 세 개씩 잘라서 이루는 삼각형이 겹치지만 않으면 순서는 무관
+				0, 1, 2, // 0, 1, 2 이 되든 0, 2, 1 이 되든 2, 1, 0 이 되든 무관
+				3, 2, 0  // 0, 2, 3 이 되든 2, 3, 0 이 되든 3, 0, 2 이 되든 무관
 			],
 			colors = [
 				1.0, 0.0, 0.0,
@@ -99,11 +99,11 @@ void main(void) {
 			rect = {
 				vertexBuffer : vertexBuffer,
 				colorBuffer : colorBuffer,
-				indexBuffer : indexBuffer,
+				indexBuffer : indexBuffer, // 인덱스 버퍼 추가
 				vertSize : 3,
 				nVerts : 4,
-				indexLength : indices.length,
-				primtype : gl.TRIANGLE_STRIP
+				indexLength : indices.length, // 인덱스 배열 길이 추가
+				primtype : gl.TRIANGLE_STRIP // drawElements()에서는 안쓰이므로 없어도 무방
 			};
 		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer),
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW),
