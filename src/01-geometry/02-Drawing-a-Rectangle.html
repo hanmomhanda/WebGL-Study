@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang='ko'>
+<head>
+<meta charset="UTF-8">
+<title>WebGL - Drawing a Rectangular</title>
+</head>
+<body>
+<canvas id="webgl-canvas" style="border: none;" width="800" height="300"></canvas>
+<script id="shader-fs" type="x-shader/x-fragment">
+void main(void) {
+	// r, g, b, a 색상 벡터
+	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+}
+</script>
+<script id="shader-vs" type="x-shader/x-vertex">
+// 직사각형 geometry를 구성하는 vertex buffer
+attribute vec3 aVertexPosition;
+
+void main(void) {
+	// 각 vertex의 위치 계산
+	gl_Position = vec4(aVertexPosition, 1.0);
+}
+</script>
+<script>
+;(function() {
+	/**
+	 * WebGL 실행 기본 구조 
+	 * 
+	 *   <canvas>에서 WebGL 컨텍스트를 가자와서 
+	 *   Viewport를 설정하고,
+	 *   ShaderProgram을 구성하고,
+	 *   그린다.
+	 */
+	var drawWebGL = function() {
+		var canvas, gl, shaderProgram;
+		canvas = document.getElementById("webgl-canvas"),
+		gl = getWebGLContext(canvas),
+		initViewport(gl, canvas),
+		shaderProgram = getShaderProgram(gl, getShader(gl, "shader-vs"), getShader(gl, "shader-fs")),
+		draw(gl, createRectangle(gl), shaderProgram);
+	},
+
+	/**
+	 * WebGL 컨텍스트 반환	 
+	 */
+	getWebGLContext = function(canvas) {
+		var gl, msg = "Your browser does not support WebGL, or it is not enabled by default.";
+		try {
+			gl = canvas.getContext("experimental-webgl");
+		} catch (e) {
+			msg = "Error creating WebGL Context!: " + e.toString();
+		}
+
+		if (!gl) {
+			alert(msg);
+			throw new Error(msg);
+		}
+
+		return gl;
+	},
+
+	/**
+	 * WebGL이 보여질 Viewport의 크기와 배경색 설정 
+	 */
+	initViewport = function(gl, canvas) {
+		gl.viewport(0, 0, canvas.width, canvas.height);
+		gl.clearColor(0.3, 0.3, 0.3, 1.0),
+		gl.clear(gl.COLOR_BUFFER_BIT);
+	},
+
+	/**
+	 * 그릴 도형 버퍼 생성 및 버퍼를 포함하는 JavaScript 객체 반환
+	 */
+	createRectangle = function(gl) {
+		var vertexBuffer = gl.createBuffer(),
+			indexBuffer = gl.createBuffer(), // 인덱스 버퍼 추가
+			vertices = [
+				 0.5,  0.5,  0.0,
+				-0.5,  0.5,  0.0,
+				-0.5, -0.5,  0.0,
+				 0.5, -0.5,  0.0
+			],
+			// vertices의 꼭지점 별 인덱스로 삼각형 구성
+			// 인덱스 배열 내의 원소를 세 개씩 잘라서 이루는 삼각형이 겹치지만 않으면 인덱스 번호 순서는 무관
+			indices = [ 
+				0, 1, 2, // 0, 1, 2 이 되든 0, 2, 1 이 되든 2, 1, 0 이 되든 무관
+				3, 2, 0  // 0, 2, 3 이 되든 2, 3, 0 이 되든 3, 0, 2 이 되든 무관
+			],
+			rectangle = {
+				vertexBuffer : vertexBuffer,
+				indexBuffer : indexBuffer, // 인덱스 버퍼 추가
+				vertSize : 3,
+				nVerts : 4,
+				indexLength : indices.length // 인덱스 배열 길이 추가
+				// 인덱스 버퍼를 쓰면 drawElements()를 쓰므로 primtype 필요 없음 
+				// primtype : gl.TRIANGLES
+			};
+		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer),
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+		// 인덱스 버퍼 설정
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer),
+		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+
+		return rectangle;
+	},
+
+	/**
+	 * shader 소스가 정의된 <script> 태그 안의 내용을 기준으로
+	 * 컴파일된 shader를 나타내는 JavaScript 반환
+	 */	
+	getShader = function(gl, id) {
+		var shaderScript = document.getElementById(id),
+			shader;
+
+		if (!shaderScript) {
+			return null;
+		}
+
+		if (shaderScript.type == "x-shader/x-fragment") {
+			shader = gl.createShader(gl.FRAGMENT_SHADER);
+		} else if (shaderScript.type == "x-shader/x-vertex") {
+			shader = gl.createShader(gl.VERTEX_SHADER);
+		} else {
+			return null;
+		}
+
+		gl.shaderSource(shader, shaderScript.textContent);
+		gl.compileShader(shader);
+
+		// Shader 컴파일 성공 확인
+		if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+			alert(gl.getShaderInfoLog(shader));
+			return null;
+		}
+
+		// 컴파일된 shader 반환
+		return shader;
+	},
+
+	/**
+	 * Vertex Shader 와 Fragment Shader 를 링크해서 Shader Program 구성
+	 * Shader Program을 나타내는 JavaScript 객체 반환
+	 */	
+	getShaderProgram = function(gl, vShader, fShader) {
+		// Shader Program 객체 생성
+		var shaderProgram = gl.createProgram();
+
+		// Shader를 링크해서 Shader Program 구성
+		gl.attachShader(shaderProgram, vShader);
+		gl.attachShader(shaderProgram, fShader);
+		gl.linkProgram(shaderProgram);
+		
+		// 링크 성공 확인, 실패 시 Shader 및 Shader Program 초기화
+		if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+			alert("Could not initialise shaders");
+			gl.deleteProgram(shaderProgram);
+			gl.deleteProgram(vertexShader);
+			gl.deleteProgram(fragmentShader);
+			return null;
+		}
+
+		return shaderProgram;
+	},
+
+	/**
+	 * WebGL 컨텍스트와 그릴 도형 객체, Shader Program 객체를 전달해서 도형을 그린다.
+	 */
+	draw = function(gl, objToDraw, shaderProgram) {
+
+		// 그릴 때 사용할 Shader Program 지정
+		gl.useProgram(shaderProgram);
+
+		// Shader Program 내의 변수에 대한 포인터를 가져온다
+		// (실제 값은 shader에 선언되어 있는 attribute 변수의 선언 순서 index 값 반환)		
+		// 두번째 파라미터는 Shader 소스 내에서 선언한 변수명과 같아야 함
+		shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+		// drawArrays() 나 drawElements() 같은 그리기 메서드가 
+		// Shader Program 내의 index로 지정한 Vertex Attribute 변수에 접근할 수 있게 해준다.
+		gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
+		// geometry 정보가 있는 Vertex Buffer를 구성하는 데 필요한 차원 수(vertSize)를 알려주고,		
+		// 버퍼를 Shader Program에 밀어 넣는다.
+		gl.bindBuffer(gl.ARRAY_BUFFER, objToDraw.vertexBuffer);
+		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, objToDraw.vertSize, gl.FLOAT, false, 0, 0);
+
+		// Index Buffer가 있으면 Index Buffer를 이용해서 drawElements()로 그리고,
+		// Index Buffer가 없으면 Vertex의 개수를 알려주고 drawArrays()로 그린다.
+		if (objToDraw.indexBuffer)
+			gl.drawElements(gl.TRIANGLES, objToDraw.indexLength, gl.UNSIGNED_SHORT, 0);
+		else
+			gl.drawArrays(objToDraw.primtype, 0, objToDraw.nVerts);
+	};
+
+	drawWebGL();
+})();
+</script>
+</body>
+</html>

@@ -8,8 +8,10 @@
 
 ## 정보 전달 흐름
 
-- gl.bindBuffer(), gl.bufferData()로 그릴 정보(geometry, 색상, texture, ...)를 WebGL context에 저장
+- gl.bindBuffer(), gl.bufferData()로 그릴 정보(geometry, 색상, texture, ...)를 버퍼를 통해 WebGL context에 저장
 - gl.bindBuffer(), gl.vertexAttribPointer()로 WebGL context에 저장된 그릴 정보를 shader내에 선언된 변수에 저장
+- 변형(변환, 회전, 스케일)에 필요한 행렬은 버퍼를 통하지 않고, uniformMatrix#fv()로 Shader에 보내고, 변형 행렬과 Vertex를 곱하는 계산도 Shader에서 수행하게 할 수 있고,
+- gl-matrix 라이브러리를 이용해서 JavaScript 내에서 변형을 계산하고, 계산한 결과를 Shader에 보내줄 수도 있으나, 앞의 방법이 성능 향상 효과가 훨씬 뛰어남 
 - gl.compileShader(), gl.attachShader(), gl.linkProgram()으로 shader를 컴파일 및 링크해서 shaderProgram에 저장
 - gl.drawArrays()나 gl.drawElements()로 shaderProgram을 GPU에 보내면 GPU가 shaderProgram을 실행하면서 렌더링
 
@@ -18,7 +20,13 @@
 - vertex
 
     >3D 공간에서의 꼭지점 
-    >하나의 vertex는 x, y, z 좌표값으로 구성
+    >하나의 vertex는 기본적으로 x, y, z 좌표값으로 구성되지만,
+    >동차 행렬을 사용하는 경우 x, y, z, a, b, c, ... 와 같이 사용될 수도 있음
+
+- geometry
+
+    >vertex로 구성되는 도형
+    >index buffer와 함께 하나 이상의 삼각형으로 구성
 
 - fragment
 
@@ -59,22 +67,25 @@
 
 
 - attribute
+    - 버퍼를 통해 JavaScript에서 vertexAttribPointer()를 통해 전달 받은 vertex 및 color 값을 저장(index 버퍼는 attribute 변수로 전달되지는 않음)
+    - vertex shader에서만 사용되며 읽기 전용 값
     - Global variables that may change per vertex, that are passed from the OpenGL application to vertex shaders. This qualifier can only be used in vertex shaders. For the shader this is a read-only variable. See Attribute section
-    - shader 내에서는 읽기 전용 값
-    - vertex shader에서만 사용
+    
 
 - uniform
+    - JavaScript에서 uniformMatrix#fv()를 통해 전달 받은 값을 저장하며 주로 변형(변환, 회전, 스케일)을 계산하기 위한 벡터가 넘어옴
+    - vertex shader, fragment shader 모두 사용되며 읽기 전용 값
     - Global variables that may change per primitive (may not be set inside glBegin,/glEnd), that are passed from the OpenGL application to the shaders. This qualifier can be used in both vertex and fragment shaders. For the shaders this is a read-only variable. See Uniform section
-    - shader 내에서는 읽기 전용 값
-    - vertex shader, fragment shader 모두 사용
 
 - varying
+    - vertex shader에서 계산된 값을 fragment shader로 전달해 줄 때 사용
+    - vertex shader와 fragment shader에서 동일한 변수명으로 선언되어야 전달이 가능하다.
+    - vertex shader에서는 쓰기도 가능, fragment shader에서는 읽기 전용
     - used for interpolated data between a vertex shader and a fragment shader. Available for writing in the vertex shader, and read-only in a fragment shader. See Varying section.
     - Varying variables provide an interface between Vertex and Fragment Shader. Vertex Shaders compute values per vertex and fragment shaders compute values per fragment. If you define a varying variable in a vertex shader, its value will be interpolated (perspective-correct) over the primitve being rendered and you can access the interpolated value in the fragment shader.
     - Varying can be used only with the data types float, vec2, vec3, vec4, mat2, mat3, mat4. (arrays of them too.)
-    - vertex shader와 fragment shader 사이의 interpolation data
-    - vertex shader와 fragment shader 사이의 interface 제공
-    - vertex shader에서는 write도 가능, fragment shader에서는 read-only
+
+
 
 
 ## WebGL Context 주요 함수 - 파악 중임
