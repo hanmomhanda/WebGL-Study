@@ -83,25 +83,34 @@
 
 
 - attribute
+
     >버퍼를 통해 JavaScript에서 vertexAttribPointer()를 통해 전달 받은 vertex 및 color 값을 저장(index 버퍼는 attribute 변수로 전달되지는 않음)
+    >
     >vertex shader에서만 사용되며 읽기 전용 값
     >
     >Global variables that may change per vertex, that are passed from the OpenGL application to vertex shaders. This qualifier can only be used in vertex shaders. For the shader this is a read-only variable. See Attribute section
     
 
 - uniform
+
     >JavaScript에서 uniformMatrix#fv()를 통해 전달 받은 값을 저장하며 주로 변형(변환, 회전, 스케일)을 계산하기 위한 벡터가 넘어옴
+    >
     >vertex shader, fragment shader 모두 사용되며 읽기 전용 값
     >
     >Global variables that may change per primitive (may not be set inside glBegin,/glEnd), that are passed from the OpenGL application to the shaders. This qualifier can be used in both vertex and fragment shaders. For the shaders this is a read-only variable. See Uniform section
 
 - varying
+    
     >vertex shader에서 계산된 값을 fragment shader로 전달해 줄 때 사용
+    >
     >vertex shader와 fragment shader에서 동일한 변수명으로 선언되어야 전달이 가능하다.
+    >
     >vertex shader에서는 쓰기도 가능, fragment shader에서는 읽기 전용
     >
     >used for interpolated data between a vertex shader and a fragment shader. Available for writing in the vertex shader, and read-only in a fragment shader. See Varying section.
+    >
     >Varying variables provide an interface between Vertex and Fragment Shader. Vertex Shaders compute values per vertex and fragment shaders compute values per fragment. If you define a varying variable in a vertex shader, its value will be interpolated (perspective-correct) over the primitve being rendered and you can access the interpolated value in the fragment shader.
+    >
     >Varying can be used only with the data types float, vec2, vec3, vec4, mat2, mat3, mat4. (arrays of them too.)
 
 
@@ -164,6 +173,7 @@
     - offset는 배열에 있는 첫번째 generic vertex attribute의 첫번째 컴포넌트에 대한 인덱스 값
     
     >attribute변수index에 해당하는 변수에 현재 바인딩 되어 있는 배열(이 함수의 호출문 앞에서 gl.bindBuffer()로 바인딩 된 배열)을 저장하고, 해당 배열 정보를 바탕으로 렌더링 할 수 있도록, vertSize, 변수타입, 정규화여부, stride, offset 값을 지정해준다.
+    >
     >program.attribute변수에 넣어진 값은 program을 통해 GPU에 전달된다.
     
 - uniformMatrix4fv(program.uniform변수, boolean, 행렬)
@@ -171,7 +181,9 @@
     >openGL 스펙 링크가 없음. webGL에만 있는 듯.
     >
     >보통 변환(변형, 회전, 스케일)을 계산하기 위한 행렬을 Shader에 넘겨준다.
+    >
     >행렬의 값을 전치(transpose, 행/열 변환) 여부에 따라 처리해서 program.uniform변수 에 넣어준다.
+    >
     >program.uniform변수에 넣어진 값은 program을 통해 GPU에 전달된다.
 
 - useProgram(shaderProgram)
@@ -179,6 +191,7 @@
     >https://www.khronos.org/opengles/sdk/docs/man/xhtml/glUseProgram.xml
     >
     >현재 렌더링 상태에 shaderProgram을 설치
+    >
     >drayArrays()가 호출되면 shaderProgram이 GPU에 전달되어 GPU가 shaderProgram을 실행한다.(이건 추측)
 
 - drawArrays(primitiveType, startIndex, nVerts)
@@ -211,7 +224,8 @@
 
     >https://www.khronos.org/opengles/sdk/docs/man/xhtml/glBufferData.xml
     >
-    >gl.bufferData()의 세 번째 파라미터인 usage에 사용되며 저장된 데이터가 어떤 방식으로 쓰이는 지 지정해주며, 버퍼 객체 성능에 큰 영향을 미친다 
+    >gl.bufferData()의 세 번째 파라미터인 usage에 사용되며 저장된 데이터가 어떤 방식으로 쓰이는 지 지정해주며, 버퍼 객체 성능에 큰 영향을 미친다
+    > 
     >버퍼 데이터 저장소에 있는 데이터를 한 번 수정해서 여러번 사용하는 경우
 
 - gl.DYNAMIC_DRAW
@@ -219,6 +233,7 @@
     >https://www.khronos.org/opengles/sdk/docs/man/xhtml/glBufferData.xml
     >
     >gl.bufferData()의 세 번째 파라미터인 usage에 사용되며 저장된 데이터가 어떤 방식으로 쓰이는 지 지정해주며, 버퍼 객체 성능에 큰 영향을 미친다 
+    >
     >버퍼 데이터 저장소에 있는 데이터를 여러 번 수정해서 여러번 사용하는 경우
 
 - gl.FRAGMENT_SHADER
