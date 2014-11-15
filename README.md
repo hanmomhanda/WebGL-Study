@@ -29,33 +29,39 @@
 
 - vertex
 
-    >3D 공간에서의 꼭지점 
+    >3D 공간에서의 꼭지점
+    >
     >하나의 vertex는 기본적으로 x, y, z 좌표값으로 구성되지만,
+    >
     >동차 행렬을 사용하는 경우 x, y, z, a, b, c, ... 와 같이 사용될 수도 있음
 
 - geometry
 
     >vertex로 구성되는 도형
+    >
     >index buffer와 함께 하나 이상의 삼각형으로 구성
 
 - fragment
 
-    >vertex로 표현되는 geometry가 아닌 모든 것 
+    >vertex로 표현되는 geometry가 아닌 모든 것
+    > 
     >색, 텍스쳐 등
 
 - Mesh
 
-     >'그물망'이라는 뜻으로, 3D 공간에서 사물을 표현하는 객체로 기하 정보(geometry)와 표면 정보(surface)로 구성된다.
-
-    >A mesh is an object composed of one or more polygonal shapes, constructed out of vertices (x, y, z triples) defining coordinate positions in 3D space.
+    >'그물망'이라는 뜻으로, 3D 공간에서 사물을 표현하는 객체로 기하 정보(geometry)와 표면 정보(surface)로 구성된다.
+    >
     >3D 공간에서 위치를 나타내는 vertices로 구성되는 하나 혹은 그 이상의 다각형으로 구성되는 객체 	
+    >
+    >A mesh is an object composed of one or more polygonal shapes, constructed out of vertices (x, y, z triples) defining coordinate positions in 3D space.
+    >
     >*Programming 3D Applications with HTML5 and WebGL*
 
 - shader
 
     >GPU에서 구동되는 함수로 버퍼에 있는 데이터를 그리는 방법에 대한 내용이 포함된다.
     
-    > `<script>` 태그 내에 문자열로 작성된 shader 소스 코드를 webGL context가 컴파일하고, 여러개의 shader가 program에 link되어 GPU에서 구동된다.
+    >`<script>` 태그 내에 문자열로 작성된 shader 소스 코드를 webGL context가 컴파일하고, 여러개의 shader가 program에 link되어 GPU에서 구동된다.
 
 - program
 
