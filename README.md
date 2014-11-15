@@ -71,7 +71,9 @@
 
 - buffer
 
-    >vertex 정보를 담는 버퍼
+    >vertex, index, color 정보를 담는 버퍼
+    
+    >vertex, color buffer는 shader의 attribute 변수로 전달되지만, index buffer는 attribute 변수로 전달되지 않는다.
 
     >실제 그래픽 카드의 메모리에 저장
 
@@ -218,6 +220,7 @@
     >https://www.khronos.org/opengles/sdk/docs/man/xhtml/glBufferData.xml
     >
     >gl.bufferData()의 세 번째 파라미터인 usage에 사용되며 저장된 데이터가 어떤 방식으로 쓰이는 지 지정해주며, 버퍼 객체 성능에 큰 영향을 미친다 
+    >
     >버퍼 데이터 저장소에 있는 데이터를 한 번 수정해서 많아야 몇 번 사용하는 경우
 
 - gl.STATIC_DRAW
