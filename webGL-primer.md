@@ -125,6 +125,7 @@
     - offset는 배열에 있는 첫번째 generic vertex attribute의 첫번째 컴포넌트에 대한 인덱스 값
 - uniformMatrix4fv(program.uniform변수, boolean, 행렬)
     - openGL 스펙 링크가 없음. webGL에만 있는 듯.
+    - 보통 변환(변형, 회전, 스케일)을 계산하기 위한 행렬을 Shader에 넘겨준다.
     - 행렬의 값을 전치(transpose, 행/열 변환) 여부에 따라 처리해서 program.uniform변수 에 넣어준다.
     - program.uniform변수에 넣어진 값은 program을 통해 GPU에 전달된다.
 - useProgram(shaderProgram)
