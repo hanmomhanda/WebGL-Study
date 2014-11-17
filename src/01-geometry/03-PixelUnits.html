@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang='ko'>
+<head>
+<meta charset="UTF-8">
+<title>WebGL - Pixel Units</title>
+</head>
+<body>
+<!-- 03 - 픽셀 단위로 크기 설정 -->
+<div id='propertyContainer'>
+	<label for='objWidth'>너비 : </label><input id='objWidth' type='text' placeholder='너비를 픽셀값으로 입력' value='100'>
+	<label for='objHeight'>높이 : </label><input id='objHeight' type='text' placeholder='높이를 픽셀값으로 입력' value='100'>	
+	<button id='btnRedraw'>다시 그리기</button>
+</div>
+<br/>
+<!-- 03 - 픽셀 단위로 크기 설정 -->
+<canvas id="webgl-canvas" style="border: none;" width="800" height="400"></canvas>
+<script id="shader-fs" type="x-shader/x-fragment">
+void main(void) {
+	// 01 - r, g, b, a 색상 벡터
+	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+}
+</script>
+<script id="shader-vs" type="x-shader/x-vertex">
+// 01 - 직사각형 geometry를 구성하는 vertex buffer
+attribute vec3 aVertexPosition;
+
+// 03 - 픽셀 좌표계로 받은 vertex 값을 정규화 하는 데 필요한 Viewport 크기
+uniform vec2 uXYNormalizer;
+
+void main(void) {
+	// 01 - 각 vertex의 위치 계산
+	// 03 - 픽셀 좌표계로 받은 값을 다시 정규화
+	gl_Position = vec4(aVertexPosition[0]/uXYNormalizer[0], 
+						aVertexPosition[1]/uXYNormalizer[1],
+						aVertexPosition[2],
+						1.0);
+}
+</script>
+<script>
+;(function() {
+	/**
+	 * 01 - WebGL 실행 기본 구조 
+	 * 
+	 *   <canvas>에서 WebGL 컨텍스트를 가자와서 
+	 *   Viewport를 설정하고,
+	 *   ShaderProgram을 구성하고,
+	 *   그린다.
+	 */
+	var drawWebGL = function() {
+		var canvas, gl, shaderProgram;
+		canvas = document.getElementById("webgl-canvas"),
+		gl = getWebGLContext(canvas),
+		initViewport(gl, canvas),
+		shaderProgram = getShaderProgram(gl, getShader(gl, "shader-vs"), getShader(gl, "shader-fs")),
+		// 03 - 픽셀 단위 사용을 위해 viewport size 벡터를 넘겨준다.
+		draw(gl, createRectangle(gl), [gl.drawingBufferWidth, gl.drawingBufferHeight], shaderProgram);
+	},
+
+	/**
+	 * 01 - WebGL 컨텍스트 반환	 
+	 */
+	getWebGLContext = function(canvas) {
+		var gl, msg = "Your browser does not support WebGL, or it is not enabled by default.";
+		try {
+			gl = canvas.getContext("experimental-webgl");
+		} catch (e) {
+			msg = "Error creating WebGL Context!: " + e.toString();
+		}
+
+		if (!gl) {
+			alert(msg);
+			throw new Error(msg);
+		}
+
+		return gl;
+	},
+
+	/**
+	 * 01 - WebGL이 보여질 Viewport의 크기와 배경색 설정 
+	 */
+	initViewport = function(gl, canvas) {
+		gl.viewport(0, 0, canvas.width, canvas.height);
+		gl.clearColor(0.3, 0.3, 0.3, 1.0),
+		gl.clear(gl.COLOR_BUFFER_BIT);
+	},
+
+	/**
+	 * 01 - 그릴 도형 버퍼 생성 및 버퍼를 포함하는 JavaScript 객체 반환
+	 */
+	createRectangle = function(gl) {
+		var vertexBuffer = gl.createBuffer(),
+			indexBuffer = gl.createBuffer(), // 02 - 인덱스 버퍼 추가
+			w = parseFloat(document.getElementById('objWidth').value), // 03 - 픽셀 단위로 입력 받은 값
+			h = parseFloat(document.getElementById('objHeight').value), // 03 - 픽셀 단위로 입력 받은 값
+			vertices = [ // 03 - 입력받은 픽셀 단위로 변경
+				 w,  h,  0.0,
+				-w,  h,  0.0,
+				-w, -h,  0.0,
+				 w, -h,  0.0
+			],
+			// 02 - vertices의 꼭지점 별 인덱스로 삼각형 구성
+			// 02 - 인덱스 배열 내의 원소를 세 개씩 잘라서 이루는 삼각형이 겹치지만 않으면 인덱스 번호 순서는 무관
+			indices = [ 
+				0, 1, 2, // 0, 1, 2 이 되든 0, 2, 1 이 되든 2, 1, 0 이 되든 무관
+				3, 2, 0  // 0, 2, 3 이 되든 2, 3, 0 이 되든 3, 0, 2 이 되든 무관
+			],
+			rectangle = {
+				vertexBuffer : vertexBuffer,
+				indexBuffer : indexBuffer, // 02 - 인덱스 버퍼 추가
+				vertSize : 3,
+				nVerts : 4,
+				indexLength : indices.length // 02 - 인덱스 배열 길이 추가
+				// 02 - 인덱스 버퍼를 쓰면 drawElements()를 쓰므로 primtype 필요 없음 
+				// 02 - primtype : gl.TRIANGLES
+			};
+		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer),
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+		// 02 - 인덱스 버퍼 설정
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer),
+		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+
+		return rectangle;
+	},
+
+	/**
+	 * 01 - shader 소스가 정의된 <script> 태그 안의 내용을 기준으로 컴파일된 shader를 나타내는 JavaScript 반환
+	 */	
+	getShader = function(gl, id) {
+		var shaderScript = document.getElementById(id),
+			shader;
+
+		if (!shaderScript) {
+			return null;
+		}
+
+		if (shaderScript.type == "x-shader/x-fragment") {
+			shader = gl.createShader(gl.FRAGMENT_SHADER);
+		} else if (shaderScript.type == "x-shader/x-vertex") {
+			shader = gl.createShader(gl.VERTEX_SHADER);
+		} else {
+			return null;
+		}
+
+		gl.shaderSource(shader, shaderScript.textContent);
+		gl.compileShader(shader);
+
+		// 01 - Shader 컴파일 성공 확인
+		if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+			alert(gl.getShaderInfoLog(shader));
+			return null;
+		}
+
+		// 01 - 컴파일된 shader 반환
+		return shader;
+	},
+
+	/**
+	 * 01 - Vertex Shader 와 Fragment Shader 를 링크해서 Shader Program 구성, Shader Program을 나타내는 JavaScript 객체 반환
+	 */	
+	getShaderProgram = function(gl, vShader, fShader) {
+		// 01 - Shader Program 객체 생성
+		var shaderProgram = gl.createProgram();
+
+		// 01 - Shader를 링크해서 Shader Program 구성
+		gl.attachShader(shaderProgram, vShader);
+		gl.attachShader(shaderProgram, fShader);
+		gl.linkProgram(shaderProgram);
+		
+		// 01 - 링크 성공 확인, 실패 시 Shader 및 Shader Program 초기화
+		if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+			alert("Could not initialise shaders");
+			gl.deleteProgram(shaderProgram);
+			gl.deleteProgram(vertexShader);
+			gl.deleteProgram(fragmentShader);
+			return null;
+		}
+
+		return shaderProgram;
+	},
+
+	/**
+	 * 01 - WebGL 컨텍스트와 그릴 도형 객체, Shader Program 객체를 전달해서 도형을 그린다.
+	 * 03 - vieportSizeArray 파라미터 추가
+	 */
+	draw = function(gl, objToDraw, viewportSizeArray, shaderProgram) {
+
+		// 01 - 그릴 때 사용할 Shader Program 지정
+		gl.useProgram(shaderProgram);
+
+		// 01 - Shader Program 내의 변수에 대한 포인터를 가져온다
+		// 01 - (실제 값은 shader에 선언되어 있는 attribute 변수의 선언 순서 index 값 반환)		
+		// 01 - 두번째 파라미터는 Shader 소스 내에서 선언한 변수명과 같아야 함
+		shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+		// 01 - drawArrays() 나 drawElements() 같은 그리기 메서드가 
+		// 01 - Shader Program 내의 index로 지정한 Vertex Attribute 변수에 접근할 수 있게 해준다.
+		gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
+		// 01 - geometry 정보가 있는 Vertex Buffer를 구성하는 데 필요한 차원 수(vertSize)를 알려주고,		
+		// 01 - 버퍼를 Shader Program에 밀어 넣는다.
+		gl.bindBuffer(gl.ARRAY_BUFFER, objToDraw.vertexBuffer);
+		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, objToDraw.vertSize, gl.FLOAT, false, 0, 0);
+
+		// 03 - 픽셀 단위를 정규화 해 줄 viewport size 벡터를 Shader Program에 밀어 넣는다.
+		// 03 - 계산에 사용되는 행렬이나 벡터는 버퍼를 거치지 않는다.
+		shaderProgram.viewportSizeUniform = gl.getUniformLocation(shaderProgram, "uXYNormalizer");
+		gl.uniform2fv(shaderProgram.viewportSizeUniform, viewportSizeArray);
+
+		// 01 - Index Buffer가 있으면 Index Buffer를 이용해서 drawElements()로 그리고,
+		// 01 - Index Buffer가 없으면 Vertex의 개수를 알려주고 drawArrays()로 그린다.
+		if (objToDraw.indexBuffer)
+			gl.drawElements(gl.TRIANGLES, objToDraw.indexLength, gl.UNSIGNED_SHORT, 0);
+		else
+			gl.drawArrays(objToDraw.primtype, 0, objToDraw.nVerts);
+	};
+
+	drawWebGL();
+
+	// 03 - 다시 그리기 이벤트 핸들러
+	document.getElementById('btnRedraw').addEventListener('click', function() {
+		drawWebGL();
+	})
+})();
+</script>
+</body>
+</html>
