@@ -6,21 +6,19 @@
 
 소스는 src 폴더 아래에..
 
-1. Geometry
+### Geometry
 
 ><a href='http://hanmomhanda.github.io/WebGL-Study/src/01-geometry/01-Drawing-a-Triangle.html' target='_blank'>01. 삼각형 그리기</a>
-><a href='https://github.com/hanmomhanda/WebGL-Study/blob/gh-pages/src/01-geometry/01-Drawing-a-Triangle.html' target='_blank'>소스</a>
 
 ><a href='http://hanmomhanda.github.io/WebGL-Study/src/01-geometry/02-Drawing-a-Rectangle.html' target='_blank'>02. 사각형 그리기</a>
-><a href='https://github.com/hanmomhanda/WebGL-Study/blob/gh-pages/src/01-geometry/02-Drawing-a-Rectangle.html' target='_blank'>소스</a>
 
 ><a href='http://hanmomhanda.github.io/WebGL-Study/src/01-geometry/03-PixelUnits.html' target='_blank'>03. 픽셀 단위 사용</a>
-><a href='https://github.com/hanmomhanda/WebGL-Study/blob/gh-pages/src/01-geometry/03-PixelUnits.html' target='_blank'>소스</a>
 
-2. Transformation
+
+### Transformation
 
 ><a href='http://hanmomhanda.github.io/WebGL-Study/src/02-transformation/04-Translation.html' target='_blank'>04. 이동 변환</a>
-><a href='https://github.com/hanmomhanda/WebGL-Study/blob/gh-pages/src/02-transformation/04-Translation.html' target='_blank'>소스</a>
+
 
 
 ----------
