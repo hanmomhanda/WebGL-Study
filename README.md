@@ -60,14 +60,14 @@
 - fragment
 
     >vertex로 표현되는 geometry가 아닌 모든 것
-    > 
+    >
     >색, 텍스쳐 등
 
 - Mesh
 
     >'그물망'이라는 뜻으로, 3D 공간에서 사물을 표현하는 객체로 기하 정보(geometry)와 표면 정보(surface)로 구성된다.
     >
-    >3D 공간에서 위치를 나타내는 vertices로 구성되는 하나 혹은 그 이상의 다각형으로 구성되는 객체 	
+    >3D 공간에서 위치를 나타내는 vertices로 구성되는 하나 혹은 그 이상의 다각형으로 구성되는 객체
     >
     >A mesh is an object composed of one or more polygonal shapes, constructed out of vertices (x, y, z triples) defining coordinate positions in 3D space.
     >
@@ -76,19 +76,19 @@
 - shader
 
     >GPU에서 구동되는 함수로 버퍼에 있는 데이터를 그리는 방법에 대한 내용이 포함된다.
-    
+
     >`<script>` 태그 내에 문자열로 작성된 shader 소스 코드를 webGL context가 컴파일하고, 여러개의 shader가 program에 link되어 GPU에서 구동된다.
 
 - program
 
     >WebGL context가 컴파일한 여러 개의 shader를 링크하고, CPU에서 지정해준 정보와 링크한 shader를 GPU에 전달하는 역할
     >
-    >program에 shader도 붙이고, vertexPosition, matrix, color도 program의 property 값으로 지정하고, GPU는 program에서 해당 정보를 읽어와서 처리  
+    >program에 shader도 붙이고, vertexPosition, matrix, color도 program의 property 값으로 지정하고, GPU는 program에서 해당 정보를 읽어와서 처리
 
 - buffer
 
     >vertex, index, color 정보를 담는 버퍼
-    
+
     >vertex, color buffer는 shader의 attribute 변수로 전달되지만, index buffer는 attribute 변수로 전달되지 않는다.
 
     >실제 그래픽 카드의 메모리에 저장
@@ -138,15 +138,15 @@ y'  =   d, e, f,  *   y
 z'  =   g, h, i       z
 
 와 같이 수학책에서 익숙하게 봐왔던 형식이 되려면 좌표는 행 벡터가 아니라 열 벡터로 표시되어야 한다.
-```` 
+````
 
 즉, 좌에서 우로 쓰더라도 채우기는 좌에서 우가 아닌 위에서 아래로 채워야 연산에 적합한 열 벡터가 생성되므로 열 우선으로 채우고, 벡터를 열 우선으로 채우니 행렬도 열 우선으로 채워야 일관성이 맞으므로 행렬 역시 열 우선으로 채우는 것으로 보인다.
 
 예를 들어, 이동 변환 행렬은
 ````
-1, 0, 0, pX,
-0, 1, 0, pY,
-0, 0, 1, pZ,
+1, 0, 0, tX,
+0, 1, 0, tY,
+0, 0, 1, tZ,
 0, 0, 0,  1
 ```
 이지만, mat4 함수로 위의 이동 변환 행렬을 만들 때는
@@ -155,7 +155,7 @@ mat4(
     1, 0, 0, 0,
     0, 1, 0, 0,
     0, 0, 1, 0,
-    pX, pY, pZ, 1
+    tX, tY, tZ, 1
 )
 ````
 로 기술하는 이유가 바로 열 우선 채우기 방식 때문이다.
@@ -181,7 +181,7 @@ mat4(
     >vertex shader에서만 사용되며 읽기 전용 값
     >
     >Global variables that may change per vertex, that are passed from the OpenGL application to vertex shaders. This qualifier can only be used in vertex shaders. For the shader this is a read-only variable. See Attribute section
-    
+
 
 - uniform
 
@@ -192,7 +192,7 @@ mat4(
     >Global variables that may change per primitive (may not be set inside glBegin,/glEnd), that are passed from the OpenGL application to the shaders. This qualifier can be used in both vertex and fragment shaders. For the shaders this is a read-only variable. See Uniform section
 
 - varying
-    
+
     >vertex shader에서 계산된 값을 fragment shader로 전달해 줄 때 사용
     >
     >vertex shader와 fragment shader에서 동일한 변수명으로 선언되어야 전달이 가능하다.
@@ -225,20 +225,20 @@ mat4(
     - index buffer 객체는 gl.ELEMENT_ARRAY_BUFFER에 바인딩해야 한다.
 
     >버퍼 객체의 이름(bufName)을 target에 바인딩. target에 새로운 버퍼 객체 이름을 바인딩하기 전까지는 해당 target에 바인딩 되어있는 버퍼 객체가 계속 유효. 즉, 상태머신과 유사하게 동작
- 
+
 - bufferData(target, new Float32Array(vertices), gl.STATIC_DRAW)
 
     >https://www.khronos.org/opengles/sdk/docs/man/xhtml/glBufferData.xml
     >
     >현재 target에 바인딩 된 버퍼 객체를 위한 데이터 저장소를 만들고, 두 번째 인자로 받은 데이터를 새로 만든 데이터 저장소에 저장한다.
-    
+
 - getAttribLocation(shaderProgram, attribute변수명)
 
     >https://www.khronos.org/opengles/sdk/docs/man/xhtml/glGetAttribLocation.xml
     >
     >shaderProgram에 link된 vertex shader 내에서 attribute변수명 변수가 선언된 순서값(0부터 시작하는 index) 반환
     >반환된 index 값은 나중에 vertexAttribPointer()의 첫번째 인자로 사용
-    
+
 - enableVertexAttribArray(attribute변수index)
 
     >https://www.khronos.org/opengles/sdk/docs/man/xhtml/glEnableVertexAttribArray.xml
@@ -246,7 +246,7 @@ mat4(
     >attribute변수index : getAttribLocation(shaderProgram, attribute변수명)의 반환값. 0이면 shader에서 첫번째로 선언된 attribute 변수에 할당될 배열을 렌더링 될 수 있게 한다.
     >
     >If enabled, the values in the generic vertex attribute array will be accessed and used for rendering when calls are made to vertex array commands such as glDrawArrays or glDrawElements.
-    
+
 - getUniformLocation(shaderProgram, attribute변수명)
 
     >https://www.khronos.org/opengles/sdk/docs/man/xhtml/glGetUniformLocation.xml
@@ -263,13 +263,13 @@ mat4(
     - boolean은 고정소수점 데이터의 정규화 여부. 부호 있는 숫자는 [-1, 1] 사이 값으로 부호 없는 숫자는 [0, 1] 사이 값으로 정규화
     - stride는 연속된 generic vertex attribute 사이의 byte offset
     - offset는 배열에 있는 첫번째 generic vertex attribute의 첫번째 컴포넌트에 대한 인덱스 값
-    
+
     >attribute변수index에 해당하는 변수에 현재 바인딩 되어 있는 배열(이 함수의 호출문 앞에서 gl.bindBuffer()로 바인딩 된 배열)을 저장하고, 해당 배열 정보를 바탕으로 렌더링 할 수 있도록, vertSize, 변수타입, 정규화여부, stride, offset 값을 지정해준다.
     >
     >program.attribute변수에 넣어진 값은 program을 통해 GPU에 전달된다.
-    
+
 - uniformMatrix4fv(program.uniform변수, boolean, 행렬)
-    
+
     >openGL 스펙 링크가 없음. webGL에만 있는 듯.
     >
     >보통 변환(변형, 회전, 스케일)을 계산하기 위한 행렬을 Shader에 넘겨준다.
@@ -287,15 +287,15 @@ mat4(
     >drayArrays()가 호출되면 shaderProgram이 GPU에 전달되어 GPU가 shaderProgram을 실행한다.(이건 추측)
 
 - drawArrays(primitiveType, startIndex, nVerts)
-    
+
     >https://www.khronos.org/opengles/sdk/docs/man/xhtml/glDrawArrays.xml
-    
+
     - primitiveType : [GL_POINTS | GL_LINE_STRIP | GL_LINE_LOOP | GL_LINES | GL_TRIANGLE_STRIP | GL_TRIANGLE_FAN | GL_TRIANGLES]
     - startIndex : enabled 된 배열의 시작 인덱스
     - nVerts : 꼭지점 수, 삼각형은 3, 사각형은 4...
 
     >현재 WebGL context에 있는 정보를 토대로 렌더링한다.(추측 GPU로 shaderProgram을 전달한다)
-    
+
 - drawElements
 
 
@@ -306,10 +306,10 @@ mat4(
     >index buffer 외의 버퍼를 바인딩 할 수 있는 target
 
 - gl.STREAM_DRAW
-    
+
     >https://www.khronos.org/opengles/sdk/docs/man/xhtml/glBufferData.xml
     >
-    >gl.bufferData()의 세 번째 파라미터인 usage에 사용되며 저장된 데이터가 어떤 방식으로 쓰이는 지 지정해주며, 버퍼 객체 성능에 큰 영향을 미친다 
+    >gl.bufferData()의 세 번째 파라미터인 usage에 사용되며 저장된 데이터가 어떤 방식으로 쓰이는 지 지정해주며, 버퍼 객체 성능에 큰 영향을 미친다
     >
     >버퍼 데이터 저장소에 있는 데이터를 한 번 수정해서 많아야 몇 번 사용하는 경우
 
@@ -318,14 +318,14 @@ mat4(
     >https://www.khronos.org/opengles/sdk/docs/man/xhtml/glBufferData.xml
     >
     >gl.bufferData()의 세 번째 파라미터인 usage에 사용되며 저장된 데이터가 어떤 방식으로 쓰이는 지 지정해주며, 버퍼 객체 성능에 큰 영향을 미친다
-    > 
+    >
     >버퍼 데이터 저장소에 있는 데이터를 한 번 수정해서 여러번 사용하는 경우
 
 - gl.DYNAMIC_DRAW
 
     >https://www.khronos.org/opengles/sdk/docs/man/xhtml/glBufferData.xml
     >
-    >gl.bufferData()의 세 번째 파라미터인 usage에 사용되며 저장된 데이터가 어떤 방식으로 쓰이는 지 지정해주며, 버퍼 객체 성능에 큰 영향을 미친다 
+    >gl.bufferData()의 세 번째 파라미터인 usage에 사용되며 저장된 데이터가 어떤 방식으로 쓰이는 지 지정해주며, 버퍼 객체 성능에 큰 영향을 미친다
     >
     >버퍼 데이터 저장소에 있는 데이터를 여러 번 수정해서 여러번 사용하는 경우
 
