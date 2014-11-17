@@ -5,16 +5,21 @@
 <title>WebGL - Translation</title>
 </head>
 <body>
+<!-- 03 - 픽셀 단위로 크기 설정 -->
 <!-- 04 - 좌표계 이동 값 설정 -->
 <div id='propertyContainer'>
+	<label for='objWidth'>너비 : </label><input id='objWidth' type='text' placeholder='너비를 픽셀값으로 입력' value='100'>
+	<label for='objHeight'>높이 : </label><input id='objHeight' type='text' placeholder='높이를 픽셀값으로 입력' value='100'>	
+	<br/>
 	<label for='translateX'>X축 이동 : </label><input id='translateX' type='text' placeholder='X축 이동값 입력' value='0'>
 	<label for='translateY'>Y축 이동 : </label><input id='translateY' type='text' placeholder='Y축 이동값 입력' value='0'>
 	<label for='translateZ'>Z축 이동 : </label><input id='translateZ' type='text' placeholder='Z축 이동값 입력' value='0' readonly="true">
-	<button id='transform'>좌표계 이동</button>
+	<button id='btnRedraw'>다시 그리기</button>
 </div>
 <br/>
+<!-- 03 - 픽셀 단위로 크기 설정 -->
 <!-- 04 - 좌표계 이동 값 설정 -->
-<canvas id="webgl-canvas" style="border: none;" width="800" height="300"></canvas>
+<canvas id="webgl-canvas" style="border: none;" width="800" height="400"></canvas>
 <script id="shader-fs" type="x-shader/x-fragment">
 void main(void) {
 	// 01 - r, g, b, a 색상 벡터
@@ -25,13 +30,13 @@ void main(void) {
 // 01 - 직사각형 geometry를 구성하는 vertex buffer
 attribute vec3 aVertexPosition;
 
-// 03 - 픽셀 좌표계로 변환해주는 행렬
-uniform mat4 uPixelCoordinates;
+// 03 - 픽셀 좌표계로 받은 vertex 값을 정규화 하는 데 필요한 Viewport 크기
+uniform vec2 uXYNormalizer;
 
-// 04 - 좌표계를 이동해주는 벡터
+// 04 - 좌표를 이동해주는 벡터
 uniform vec3 uTranslation;
 
-// 04 - 좌표계를 이동해주는 벡터에서 4*4 매트릭스 생성 및 반환
+// 04 - 좌표 이동 값을 통해 이동 변환 행렬 생성 및 반환
 mat4 getTranslationMatrix(vec3 t) {
 	return mat4(
 		1, 0, 0, 0,
@@ -42,9 +47,18 @@ mat4 getTranslationMatrix(vec3 t) {
 }
 
 void main(void) {
-	// 01, 03, 04 - 각 vertex의 위치 계산, 픽셀 좌표계로 변환, 좌표계 이동
-	gl_Position = uPixelCoordinates*getTranslationMatrix(uTranslation)*vec4(aVertexPosition, 1.0);
+	// 01 - 각 vertex의 위치 계산
+	// 03 - 픽셀 좌표계로 받은 값을 다시 정규화
+	// 04 - 이동 변환 적용
+	gl_Position = getTranslationMatrix(vec3(uTranslation[0]/uXYNormalizer[0]*2.0,
+											uTranslation[1]/uXYNormalizer[1]*2.0,
+											uTranslation[2]))
+					*vec4(aVertexPosition[0]/uXYNormalizer[0], 
+						aVertexPosition[1]/uXYNormalizer[1],
+						aVertexPosition[2],
+						1.0);
 }
+
 </script>
 <script>
 ;(function() {
@@ -67,8 +81,12 @@ void main(void) {
 		tX = parseFloat(document.getElementById('translateX').value),
 		tY = parseFloat(document.getElementById('translateY').value),
 		tZ = parseFloat(document.getElementById('translateZ').value),
+		// 03 - 픽셀 단위 사용을 위해 viewport size 벡터를 넘겨준다.
 		// 04 - 좌표계 이동 벡터 파라미터 추가
-		draw(gl, createRectangle(gl), [tX, tY, tZ], shaderProgram);
+		draw(gl, createRectangle(gl),
+			[gl.drawingBufferWidth, gl.drawingBufferHeight],
+			[tX, tY, tZ],
+			shaderProgram);
 	},
 
 	/**
@@ -105,11 +123,14 @@ void main(void) {
 	createRectangle = function(gl) {
 		var vertexBuffer = gl.createBuffer(),
 			indexBuffer = gl.createBuffer(), // 02 - 인덱스 버퍼 추가
-			vertices = [ // 03 - 픽셀 단위로 변경
-				 100,  100,  0.0,
-				-100,  100,  0.0,
-				-100, -100,  0.0,
-				 100, -100,  0.0
+			w = parseFloat(document.getElementById('objWidth').value), // 03 - 픽셀 단위로 입력 받은 값
+			h = parseFloat(document.getElementById('objHeight').value), // 03 - 픽셀 단위로 입력 받은 값
+
+			vertices = [ // 03 - 입력받은 픽셀 단위로 변경
+				 w,  h,  0.0,
+				-w,  h,  0.0,
+				-w, -h,  0.0,
+				 w, -h,  0.0
 			],
 			// 02 - vertices의 꼭지점 별 인덱스로 삼각형 구성
 			// 02 - 인덱스 배열 내의 원소를 세 개씩 잘라서 이루는 삼각형이 겹치지만 않으면 인덱스 번호 순서는 무관
@@ -137,8 +158,7 @@ void main(void) {
 	},
 
 	/**
-	 * 01 - shader 소스가 정의된 <script> 태그 안의 내용을 기준으로
-	 * 컴파일된 shader를 나타내는 JavaScript 반환
+	 * 01 - shader 소스가 정의된 <script> 태그 안의 내용을 기준으로 컴파일된 shader를 나타내는 JavaScript 반환
 	 */	
 	getShader = function(gl, id) {
 		var shaderScript = document.getElementById(id),
@@ -170,8 +190,7 @@ void main(void) {
 	},
 
 	/**
-	 * Vertex Shader 와 Fragment Shader 를 링크해서 Shader Program 구성
-	 * Shader Program을 나타내는 JavaScript 객체 반환
+	 * 01 - Vertex Shader 와 Fragment Shader 를 링크해서 Shader Program 구성, Shader Program을 나타내는 JavaScript 객체 반환
 	 */	
 	getShaderProgram = function(gl, vShader, fShader) {
 		// 01 - Shader Program 객체 생성
@@ -198,7 +217,7 @@ void main(void) {
 	 * 01 - WebGL 컨텍스트와 그릴 도형 객체, Shader Program 객체를 전달해서 도형을 그린다.
 	 * 04 - 좌표계 이동을 위한 translationArray 파라미터 추가
 	 */
-	draw = function(gl, objToDraw, translationArray, shaderProgram) {
+	draw = function(gl, objToDraw, viewportSizeArray, translationArray, shaderProgram) {
 
 		// 03 - 픽셀 좌표계로 변환해 줄 행렬
 		var pixelCoordinatesMatrix = [
@@ -212,30 +231,30 @@ void main(void) {
 		gl.useProgram(shaderProgram);
 
 		// 01 - Shader Program 내의 변수에 대한 포인터를 가져온다
-		// (실제 값은 shader에 선언되어 있는 attribute 변수의 선언 순서 index 값 반환)		
-		// 두번째 파라미터는 Shader 소스 내에서 선언한 변수명과 같아야 함
+		// 01 - (실제 값은 shader에 선언되어 있는 attribute 변수의 선언 순서 index 값 반환)		
+		// 01 - 두번째 파라미터는 Shader 소스 내에서 선언한 변수명과 같아야 함
 		shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
 		// 01 - drawArrays() 나 drawElements() 같은 그리기 메서드가 
-		// Shader Program 내의 index로 지정한 Vertex Attribute 변수에 접근할 수 있게 해준다.
+		// 01 - Shader Program 내의 index로 지정한 Vertex Attribute 변수에 접근할 수 있게 해준다.
 		gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
 
 		// 01 - geometry 정보가 있는 Vertex Buffer를 구성하는 데 필요한 차원 수(vertSize)를 알려주고,		
-		// 버퍼를 Shader Program에 밀어 넣는다.
+		// 01 - 버퍼를 Shader Program에 밀어 넣는다.
 		gl.bindBuffer(gl.ARRAY_BUFFER, objToDraw.vertexBuffer);
 		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, objToDraw.vertSize, gl.FLOAT, false, 0, 0);
 
-		// 03 - 픽셀 단위로 변환해줄 행렬을 Shader Program에 밀어 넣는다.
-		// 변환에 쓰는 행렬은 버퍼를 거치지 않는다.
-		shaderProgram.pixelCoordinatesUniform = gl.getUniformLocation(shaderProgram, "uPixelCoordinates");
-		gl.uniformMatrix4fv(shaderProgram.pixelCoordinatesUniform, false, pixelCoordinatesMatrix);
+		// 03 - 픽셀 단위를 정규화 해 줄 viewport size 벡터를 Shader Program에 밀어 넣는다.
+		// 03 - 계산에 사용되는 행렬이나 벡터는 버퍼를 거치지 않는다.
+		shaderProgram.viewportSizeUniform = gl.getUniformLocation(shaderProgram, "uXYNormalizer");
+		gl.uniform2fv(shaderProgram.viewportSizeUniform, viewportSizeArray);
 
 		// 04 - 좌표계 이동을 위한 벡터를 Shader Program에 밀어 넣는다.
-		// 좌표계 이동에 쓰는 벡터는 버퍼를 거치지 않는다.
+		// 04 - 계산에 사용되는 행렬이나 벡터는 버퍼를 거치지 않는다.
 		shaderProgram.translationUniform = gl.getUniformLocation(shaderProgram, "uTranslation");
 		gl.uniform3fv(shaderProgram.translationUniform, translationArray);	
 
 		// 01 - Index Buffer가 있으면 Index Buffer를 이용해서 drawElements()로 그리고,
-		// Index Buffer가 없으면 Vertex의 개수를 알려주고 drawArrays()로 그린다.
+		// 01 - Index Buffer가 없으면 Vertex의 개수를 알려주고 drawArrays()로 그린다.
 		if (objToDraw.indexBuffer)
 			gl.drawElements(gl.TRIANGLES, objToDraw.indexLength, gl.UNSIGNED_SHORT, 0);
 		else
@@ -244,8 +263,8 @@ void main(void) {
 
 	drawWebGL();
 
-	// 04 - 변환 버튼 이벤트 핸들러
-	document.getElementById('transform').addEventListener('click', function() {
+	// 03 - 다시 그리기 이벤트 핸들러
+	document.getElementById('btnRedraw').addEventListener('click', function() {
 		drawWebGL();
 	})
 

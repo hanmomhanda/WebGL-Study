@@ -5,7 +5,7 @@
 <title>WebGL - Drawing a Rectangle</title>
 </head>
 <body>
-<canvas id="webgl-canvas" style="border: none;" width="800" height="300"></canvas>
+<canvas id="webgl-canvas" style="border: none;" width="800" height="400"></canvas>
 <script id="shader-fs" type="x-shader/x-fragment">
 void main(void) {
 	// 01 - r, g, b, a 색상 벡터
@@ -106,8 +106,7 @@ void main(void) {
 	},
 
 	/**
-	 * 01 - shader 소스가 정의된 <script> 태그 안의 내용을 기준으로
-	 * 컴파일된 shader를 나타내는 JavaScript 반환
+	 * 01 - shader 소스가 정의된 <script> 태그 안의 내용을 기준으로 컴파일된 shader를 나타내는 JavaScript 반환
 	 */	
 	getShader = function(gl, id) {
 		var shaderScript = document.getElementById(id),
@@ -139,8 +138,7 @@ void main(void) {
 	},
 
 	/**
-	 * 01 - Vertex Shader 와 Fragment Shader 를 링크해서 Shader Program 구성
-	 * Shader Program을 나타내는 JavaScript 객체 반환
+	 * 01 - Vertex Shader 와 Fragment Shader 를 링크해서 Shader Program 구성, Shader Program을 나타내는 JavaScript 객체 반환
 	 */	
 	getShaderProgram = function(gl, vShader, fShader) {
 		// 01 - Shader Program 객체 생성
@@ -172,20 +170,20 @@ void main(void) {
 		gl.useProgram(shaderProgram);
 
 		// 01 - Shader Program 내의 변수에 대한 포인터를 가져온다
-		// (실제 값은 shader에 선언되어 있는 attribute 변수의 선언 순서 index 값 반환)		
-		// 두번째 파라미터는 Shader 소스 내에서 선언한 변수명과 같아야 함
+		// 01 - (실제 값은 shader에 선언되어 있는 attribute 변수의 선언 순서 index 값 반환)		
+		// 01 - 두번째 파라미터는 Shader 소스 내에서 선언한 변수명과 같아야 함
 		shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
 		// 01 - drawArrays() 나 drawElements() 같은 그리기 메서드가 
-		// Shader Program 내의 index로 지정한 Vertex Attribute 변수에 접근할 수 있게 해준다.
+		// 01 - Shader Program 내의 index로 지정한 Vertex Attribute 변수에 접근할 수 있게 해준다.
 		gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
 
 		// 01 - geometry 정보가 있는 Vertex Buffer를 구성하는 데 필요한 차원 수(vertSize)를 알려주고,		
-		// 버퍼를 Shader Program에 밀어 넣는다.
+		// 01 - 버퍼를 Shader Program에 밀어 넣는다.
 		gl.bindBuffer(gl.ARRAY_BUFFER, objToDraw.vertexBuffer);
 		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, objToDraw.vertSize, gl.FLOAT, false, 0, 0);
 
 		// 01 - Index Buffer가 있으면 Index Buffer를 이용해서 drawElements()로 그리고,
-		// Index Buffer가 없으면 Vertex의 개수를 알려주고 drawArrays()로 그린다.
+		// 01 - Index Buffer가 없으면 Vertex의 개수를 알려주고 drawArrays()로 그린다.
 		if (objToDraw.indexBuffer)
 			gl.drawElements(gl.TRIANGLES, objToDraw.indexLength, gl.UNSIGNED_SHORT, 0);
 		else
