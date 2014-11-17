@@ -142,12 +142,25 @@ mat4 getSizeMatrix(vec3 s) {
 	);
 }
 
+// vp - viewport, sp = sizepixel, r = rotation
+mat4 xRotCompensator(vec2 vp, vec3 sp, vec3 r) {
+	float s, c;
+	s = sin(r[0]), c = cos(r[0]);
+	return mat4(
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 8.0/vp[0]/vp[0]/vp[1]*sp[0]*sp[0]*sp[1]*sp[1]*sp[2]*sp[2]*(c*c+2.0/vp[1]*s*s), (-8.0)/vp[0]/vp[0]/vp[1]*sp[0]*sp[0]*sp[1]*sp[1]*sp[1]*sp[2]*c*s*(1.0+2.0/vp[1]), 0.0,
+		0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 1.0
+	);
+}
+
 void main(void) {
 	// 01 - 각 vertex의 위치 계산
 	// 03 - 픽셀 좌표계로 받은 값을 다시 정규화
 	// 04 - 이동 변환 적용
 	// 05 - 회전 변환 적용
 	gl_Position = getPixelMatrix(uXYNormalizer)*getTranslationMatrix(uTranslation)*getRotationMatrix(uRotation)*getSizeMatrix(uSizePixel)*vec4(aVertexPosition, 1.0);
+	// gl_Position = getPixelMatrix(uXYNormalizer)*getTranslationMatrix(uTranslation)*getRotationMatrix(uRotation)*getSizeMatrix(uSizePixel)*xRotCompensator(uXYNormalizer, uSizePixel, uRotation)*vec4(aVertexPosition, 1.0);
 	// gl_Position = getTranslationMatrix(uTranslation)*getRotationMatrix(uRotation)*vec4(aVertexPosition, 1.0);
 	// gl_Position = getRotationMatrix(uRotation)
 	// 				*getTranslationMatrix(vec3(uTranslation[0]/uXYNormalizer[0]*2.0,
@@ -391,7 +404,7 @@ void main(void) {
 		// 05 - 좌표계 회전을 위한 벡터를 Shader Program에 밀어 넣는다.
 		// 05 - 계산에 사용되는 행렬이나 벡터는 버퍼를 거치지 않는다.
 		shaderProgram.sizePixelUniform = gl.getUniformLocation(shaderProgram, "uSizePixel");
-		gl.uniform3fv(shaderProgram.sizePixelUniform, [objToDraw.width, objToDraw.height, 0]);
+		gl.uniform3fv(shaderProgram.sizePixelUniform, [objToDraw.width, objToDraw.height, 1]);
 
 		// 01 - Index Buffer가 있으면 Index Buffer를 이용해서 drawElements()로 그리고,
 		// 01 - Index Buffer가 없으면 Vertex의 개수를 알려주고 drawArrays()로 그린다.
