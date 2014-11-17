@@ -128,7 +128,7 @@ vec3( a, b, c ) 가 반환하는 벡터는
     c
 인 열 벡터다.
 ````
->즉, 채우는 순서가 직관적으로 생각했던 행 우선(첫 번째 행부터 다 채우고 다음 행을 채우는)이 아니라 **열 우선(첫 번째 열부터 다 채우고 다음 열을 채우는)**이다.
+>즉, **채우는 순서**가 직관적으로 생각했던 행 우선(첫 번째 행부터 다 채우고 다음 행을 채우는)이 아니라 **열 우선(첫 번째 열부터 다 채우고 다음 열을 채우는)**이다.
 
 이유는.. 추측하기로는 프로그램 언어는 일반적으로 행을 기준으로 구분하고, 하나의 행에서 좌에서 우로 기술하므로 3차원 좌표 역시 `(x, y, z)`로 기술하지만, 실제 수학적인 연산에서는 3차원 좌표는 열 벡터로 기술되어야 하기 때문인 것으로 보인다.
 
@@ -185,7 +185,7 @@ mat4(
 
 - uniform
 
-    >JavaScript에서 uniformMatrix#fv()를 통해 전달 받은 값을 저장하며 주로 변형(변환, 회전, 스케일)을 계산하기 위한 벡터가 넘어옴
+    >JavaScript에서 uniformMatrix#fv()를 통해 전달 받은 값을 저장하며 주로 변형(이동, 회전, 스케일)을 계산하기 위한 벡터가 넘어옴
     >
     >vertex shader, fragment shader 모두 사용되며 읽기 전용 값
     >
@@ -348,3 +348,5 @@ mat4(
 - gl.DEPTH_TEST
 
 
+-------
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />This work by <a xmlns:cc="http://creativecommons.org/ns#" href="www.facebook.com/hanmomhanda" property="cc:attributionName" rel="cc:attributionURL">hanmomhanda</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
