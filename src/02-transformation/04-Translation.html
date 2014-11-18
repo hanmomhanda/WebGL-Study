@@ -9,19 +9,18 @@
 </head>
 <body>
 <!-- 03 - 픽셀 단위로 크기 설정 -->
-<!-- 04 - 좌표계 이동 값 설정 -->
+<!-- 04 - 픽셀 단위 이동 값 설정 -->
 <div id='propertyContainer'>
-	<label for='objWidth'>너비 : </label><input id='objWidth' type='text' placeholder='너비를 픽셀값으로 입력' value='100'>
-	<label for='objHeight'>높이 : </label><input id='objHeight' type='text' placeholder='높이를 픽셀값으로 입력' value='100'>
+	<label for='objWidth'>너비 : </label><input id='objWidth' type='text' placeholder='너비를 픽셀 단위로 입력' value='100'>
+	<label for='objHeight'>높이 : </label><input id='objHeight' type='text' placeholder='높이를 픽셀 단위로 입력' value='100'>
 	<br/>
-	<label for='translateX'>X축 이동 : </label><input id='translateX' type='text' placeholder='X축 이동값 입력' value='0'>
-	<label for='translateY'>Y축 이동 : </label><input id='translateY' type='text' placeholder='Y축 이동값 입력' value='0'>
-	<label for='translateZ'>Z축 이동 : </label><input id='translateZ' type='text' placeholder='Z축 이동값 입력' value='0' readonly="true">
-	<button id='btnRedraw'>다시 그리기</button>
+	<label for='translateX'>X축 이동 : </label><input id='translateX' type='text' placeholder='X축 이동값을 픽셀 단위로 입력' value='0'>
+	<label for='translateY'>Y축 이동 : </label><input id='translateY' type='text' placeholder='Y축 이동값을 픽셀 단위로 입력' value='0'>
+	<label for='translateZ'>Z축 이동 : </label><input id='translateZ' type='text' placeholder='Z축 이동값을 픽셀 단위로 입력' value='0' readonly="true">
 </div>
 <br/>
 <!-- 03 - 픽셀 단위로 크기 설정 -->
-<!-- 04 - 좌표계 이동 값 설정 -->
+<!-- 04 - 픽셀 단위 이동 값 설정 -->
 <canvas id="webgl-canvas" style="border: none;" width="800" height="400"></canvas>
 <hr/>
 <footer>
@@ -52,39 +51,31 @@ void main(void) {
 // 01 - 직사각형 geometry를 구성하는 vertex buffer
 attribute vec3 aVertexPosition;
 
-// 03 - 픽셀 좌표계로 받은 vertex 값을 정규화 하는 데 필요한 Viewport 크기
+// 03 - 픽셀 단위로 받은 vertex 값을 정규화 하는 데 필요한 Viewport 크기
 uniform vec2 uViewportSizeInPixel;
 
-// 03 - 정규화를 위한 행렬
-mat4 normalizer(vec2 vp) {
-	return mat4(
-		1.0/vp[0], 0, 0, 0,
-		0, 1.0/vp[1], 0, 0,
-		0, 0, 1, 0,
-		0, 0, 0, 1
-	);
-}
-
-// 04 - 좌표를 이동해주는 벡터
+// 04 - 픽셀 단위 좌표 이동값이 들어 있는 벡터
 uniform vec3 uTranslation;
 
-// 04 - 좌표 이동 값을 통해 이동 변환 행렬 생성 및 반환
-mat4 getTranslationMatrix(vec3 t) {
+// 04 - 픽셀 단위로 받은 좌표 이동 값을 정규화 해서 이동 변환 행렬 생성 및 반환
+mat4 getTranslationMatrix(vec3 t, vec2 vp) {
 	return mat4(
 		1, 0, 0, 0,
 		0, 1, 0, 0,
 		0, 0, 1, 0,
-		t[0]*2.0, t[1]*2.0, t[2], 1 // x, y에 2를 곱하는 이유 설명 필요
+		t[0]*2.0/vp[0], t[1]*2.0/vp[1], t[2], 1 // 정규화 하면서 2를 곱하는 이유 설명 필요
 	);
 }
 
 void main(void) {
 	// 01 - 각 vertex의 위치 계산
-	// 03 - 픽셀 좌표계로 받은 값을 다시 정규화
+	// 03 - 픽셀 단위로 받은 vertex 값을 정규화
 	// 04 - 이동 변환 적용
-	gl_Position = normalizer(uViewportSizeInPixel)
-					*getTranslationMatrix(uTranslation)
-					*vec4(aVertexPosition, 1.0);
+	gl_Position = getTranslationMatrix(uTranslation, uViewportSizeInPixel)
+					*vec4(aVertexPosition[0]/uViewportSizeInPixel[0],
+						aVertexPosition[1]/uViewportSizeInPixel[1],
+						aVertexPosition[2],
+						1.0);
 }
 
 </script>
@@ -100,17 +91,17 @@ void main(void) {
 	 */
 	var drawWebGL = function() {
 		var canvas, gl, shaderProgram,
-			tX, tY, tZ; // 04 - x, y, z 좌표계 이동 값
+			tX, tY, tZ; // 04 - x, y, z 방향 이동 값
 		canvas = document.getElementById("webgl-canvas"),
 		gl = getWebGLContext(canvas),
 		initViewport(gl, canvas),
 		shaderProgram = getShaderProgram(gl, getShader(gl, "shader-vs"), getShader(gl, "shader-fs")),
-		// 04 - x, y, z 좌표계 이동 값
+		// 04 - x, y, z 방향 이동 값
 		tX = parseFloat(document.getElementById('translateX').value),
 		tY = parseFloat(document.getElementById('translateY').value),
 		tZ = parseFloat(document.getElementById('translateZ').value),
 		// 03 - 픽셀 단위 사용을 위해 viewport size 벡터를 넘겨준다.
-		// 04 - 좌표계 이동 벡터 파라미터 추가
+		// 04 - x, y, z 방향 이동 벡터 파라미터 추가
 		draw(gl, createRectangle(gl),
 			[gl.drawingBufferWidth, gl.drawingBufferHeight],
 			[tX, tY, tZ],
@@ -147,6 +138,7 @@ void main(void) {
 
 	/**
 	 * 01 - 그릴 도형 버퍼 생성 및 버퍼를 포함하는 JavaScript 객체 반환
+	 * 03 - 픽셀 단위 입력 값으로 버텍스 설정
 	 */
 	createRectangle = function(gl) {
 		var vertexBuffer = gl.createBuffer(),
@@ -243,17 +235,9 @@ void main(void) {
 
 	/**
 	 * 01 - WebGL 컨텍스트와 그릴 도형 객체, Shader Program 객체를 전달해서 도형을 그린다.
-	 * 04 - 좌표계 이동을 위한 translationArray 파라미터 추가
+	 * 04 - x, y, z 방향 이동을 위한 translationArray 파라미터 추가
 	 */
 	draw = function(gl, objToDraw, viewportSizeArray, translationArray, shaderProgram) {
-
-		// 03 - 픽셀 좌표계로 변환해 줄 행렬
-		var pixelCoordinatesMatrix = [
-				2/gl.drawingBufferWidth, 0, 0, 0,
-				0, 2/gl.drawingBufferHeight, 0, 0,
-				0, 0, 1, 0,
-				0, 0, 0, 1
-			];
 
 		// 01 - 그릴 때 사용할 Shader Program 지정
 		gl.useProgram(shaderProgram);
@@ -276,7 +260,7 @@ void main(void) {
 		shaderProgram.viewportSizeUniform = gl.getUniformLocation(shaderProgram, "uViewportSizeInPixel");
 		gl.uniform2fv(shaderProgram.viewportSizeUniform, viewportSizeArray);
 
-		// 04 - 좌표계 이동을 위한 벡터를 Shader Program에 밀어 넣는다.
+		// 04 - x, y, z 방향 이동을 위한 벡터를 Shader Program에 밀어 넣는다.
 		// 04 - 계산에 사용되는 행렬이나 벡터는 버퍼를 거치지 않는다.
 		shaderProgram.translationUniform = gl.getUniformLocation(shaderProgram, "uTranslation");
 		gl.uniform3fv(shaderProgram.translationUniform, translationArray);

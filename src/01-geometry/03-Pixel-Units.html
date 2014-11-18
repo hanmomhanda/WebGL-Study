@@ -10,8 +10,8 @@
 <body>
 <!-- 03 - 픽셀 단위로 크기 설정 -->
 <div id='propertyContainer'>
-	<label for='objWidth'>너비 : </label><input id='objWidth' type='text' placeholder='너비를 픽셀값으로 입력' value='100'>
-	<label for='objHeight'>높이 : </label><input id='objHeight' type='text' placeholder='높이를 픽셀값으로 입력' value='100'>
+	<label for='objWidth'>너비 : </label><input id='objWidth' type='text' placeholder='너비를 픽셀 단위로 입력' value='100'>
+	<label for='objHeight'>높이 : </label><input id='objHeight' type='text' placeholder='높이를 픽셀 단위로 입력' value='100'>
 	<button id='btnRedraw'>다시 그리기</button>
 </div>
 <br/>
@@ -46,23 +46,16 @@ void main(void) {
 // 01 - 직사각형 geometry를 구성하는 vertex buffer
 attribute vec3 aVertexPosition;
 
-// 03 - 픽셀 좌표계로 받은 vertex 값을 정규화 하는 데 필요한 Viewport 크기
+// 03 - 픽셀 단위로 받은 vertex 값을 정규화 하는 데 필요한 Viewport 크기
 uniform vec2 uViewportSizeInPixel;
-
-// 03 - 정규화를 위한 행렬
-mat4 normalizer(vec2 vp) {
-	return mat4(
-		1.0/vp[0], 0, 0, 0,
-		0, 1.0/vp[1], 0, 0,
-		0, 0, 1, 0,
-		0, 0, 0, 1
-	);
-}
 
 void main(void) {
 	// 01 - 각 vertex의 위치 계산
-	// 03 - 픽셀 좌표계로 받은 값을 정규화
-	gl_Position = normalizer(uViewportSizeInPixel)*vec4(aVertexPosition, 1.0);
+	// 03 - 픽셀 단위로 받은 vertex 값을 정규화
+	gl_Position = vec4(aVertexPosition[0]/uViewportSizeInPixel[0],
+					aVertexPosition[1]/uViewportSizeInPixel[1],
+					aVertexPosition[2],
+					1.0);
 }
 </script>
 <script>
@@ -115,6 +108,7 @@ void main(void) {
 
 	/**
 	 * 01 - 그릴 도형 버퍼 생성 및 버퍼를 포함하는 JavaScript 객체 반환
+	 * 03 - 픽셀 단위 입력 값으로 버텍스 설정
 	 */
 	createRectangle = function(gl) {
 		var vertexBuffer = gl.createBuffer(),
