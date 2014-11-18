@@ -10,9 +10,9 @@
 <body>
 <!-- 03 - 픽셀 단위로 크기 설정 -->
 <div id='propertyContainer'>
-	<label for='objWidth'>너비 : </label><input id='objWidth' type='range' min='0' max='800' value='100'><span id='pxWidth'>100</span>
-	<label for='objHeight'>높이 : </label><input id='objHeight' type='range' min='0' max='400' value='100'><span id='pxHeight'>100</span>
-	<label for='objDepth'>깊이 : </label><input id='objDepth' type='range' min='0' max='200' value='0'><span id='pxDepth'>0</span>
+	<label for='objWidth'>너비 : </label><input class='slider' id='objWidth' type='range' min='0' max='800' value='100'><span id='pxWidth'>100</span>
+	<label for='objHeight'>높이 : </label><input class='slider' id='objHeight' type='range' min='0' max='400' value='100'><span id='pxHeight'>100</span>
+	<label for='objDepth'>깊이 : </label><input class='slider' id='objDepth' type='range' min='0' max='200' value='0'><span id='pxDepth'>0</span>
 </div>
 <br/>
 <!-- 03 - 픽셀 단위로 크기 설정 -->
@@ -246,15 +246,14 @@ void main(void) {
 
 	drawWebGL();
 
-	// 03 - 슬라이더 이벤트 핸들러
-	document.getElementById('objWidth').addEventListener('input', function() {
-		drawWebGL();
-		document.getElementById('pxWidth').textContent = this.value;
-	}),
-	document.getElementById('objHeight').addEventListener('input', function() {
-		drawWebGL();
-		document.getElementById('pxHeight').textContent = this.value;
-	});
+	// 03- 슬라이더 이벤트 핸들러
+	Array.prototype.slice.call(document.querySelectorAll('.slider'))
+		.forEach( function( element ) {
+			element.addEventListener('input', function() {
+				drawWebGL();
+				element.nextSibling.innerText = element.value;
+			});
+		});
 
 })();
 </script>
