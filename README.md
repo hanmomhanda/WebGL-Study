@@ -168,6 +168,19 @@ mat4(
 
 동차 좌표계를 왜 쓰는 지는 이동 변환을 이용해서 나중에 설명 추가
 
+## Transformation
+
+>참고 : http://duriansoftware.com/joe/An-intro-to-modern-OpenGL.-Chapter-3:-3D-transformation-and-projection.html
+
+````
+(M1*M2)*M3 == M1*(M2*M3)
+
+(M1*M2)*V1 == M1*(M2*V1)
+
+M1*M2*M3*V1 == (M1*M2)*M3*V1 == M1*(M2*M3)*V1 == M1*M2*(M3*V1)
+````
+
+
 
 ## Shader Variable Qualifiers
 
