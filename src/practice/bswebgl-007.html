@@ -1,5 +1,10 @@
 <body>
-
+<div id='propertyContainer'>
+    <label for='rotateX'>X축 회전각 : </label><input id='rotateX' type='text' placeholder='X축 기준 회전 각도 입력' value='0'>
+    <label for='rotateY'>Y축 회전각 : </label><input id='rotateY' type='text' placeholder='Y축 기준 회전 각도 입력' value='0'>
+    <label for='rotateZ'>Z축 회전각 : </label><input id='rotateZ' type='text' placeholder='Z축 기준 회전 각도 입력' value='0'>
+    <button id='btnRedraw'>다시 그리기</button>
+</div>
 <canvas id="glCanvas" width="1000" height="500"></canvas>
 <script>
 
@@ -103,9 +108,13 @@
     var scales=[100, 100, 1]
     var position = [100,0,0]
     function render(){
-       // rotations[0] += 0.1
-//        rotations[1] += 0.1
-        rotations[2]+=0.01
+        // rotations[0] += 0.1
+        // rotations[1] += 0.1
+        // rotations[2]+=0.01
+        var _RADIAN = Math.PI/180;
+        rotations[0] = parseFloat(document.getElementById('rotateX').value)*_RADIAN,
+        rotations[1] = parseFloat(document.getElementById('rotateY').value)*_RADIAN,
+        rotations[2] = parseFloat(document.getElementById('rotateZ').value)*_RADIAN,
         gl.clearColor(0, 0, 0, 1)
         gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT)
         gl.useProgram(firstProgram)
@@ -119,7 +128,12 @@
         gl.uniform3fv(firstProgram.uColor, [0.2, 0.4, 0.6])
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, rectBuffer.numItem);
     }
-    setInterval(render, 16)
+    // setInterval(render, 16)
+    render();
+
+    document.getElementById('btnRedraw').addEventListener('click', function() {
+        render();
+    })
 </script>
 
 
