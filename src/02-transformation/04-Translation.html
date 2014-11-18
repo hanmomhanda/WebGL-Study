@@ -11,13 +11,12 @@
 <!-- 03 - 픽셀 단위로 크기 설정 -->
 <!-- 04 - 픽셀 단위 이동 값 설정 -->
 <div id='propertyContainer'>
-	<label for='objWidth'>너비 : </label><input id='objWidth' type='text' placeholder='너비를 픽셀 단위로 입력' value='100'>
-	<label for='objHeight'>높이 : </label><input id='objHeight' type='text' placeholder='높이를 픽셀 단위로 입력' value='100'>
+	<label for='objWidth'>너비 : </label><input id='objWidth' type='range' min='0' max='800' value='100'><span id='pxWidth'>100</span>
+	<label for='objHeight'>높이 : </label><input id='objHeight' type='range' min='0' max='400' value='100'><span id='pxHeight'>100</span>
 	<br/>
-	<label for='translateX'>X축 이동 : </label><input id='translateX' type='text' placeholder='X축 이동값을 픽셀 단위로 입력' value='0'>
-	<label for='translateY'>Y축 이동 : </label><input id='translateY' type='text' placeholder='Y축 이동값을 픽셀 단위로 입력' value='0'>
-	<label for='translateZ'>Z축 이동 : </label><input id='translateZ' type='text' placeholder='Z축 이동값을 픽셀 단위로 입력' value='0' readonly="true">
-	<button id='btnRedraw'>다시 그리기</button>
+	<label for='translateX'>X축 이동 : </label><input id='translateX' type='range' min='-400' max='400' value='0'><span id='pxTX'>0</span>
+	<label for='translateY'>Y축 이동 : </label><input id='translateY' type='range' min='-200' max='200' value='0'><span id='pxTY'>0</span>
+	<label for='translateZ'>Z축 이동 : </label><input id='translateZ' type='range' min='-200' max='200' value='0' readonly="true"><span id='pxTZ'>0</span>
 </div>
 <br/>
 <!-- 03 - 픽셀 단위로 크기 설정 -->
@@ -283,10 +282,25 @@ void main(void) {
 
 	drawWebGL();
 
-	// 03 - 다시 그리기 이벤트 핸들러
-	document.getElementById('btnRedraw').addEventListener('click', function() {
+	// 03 - 슬라이더 이벤트 핸들러
+	document.getElementById('objWidth').addEventListener('input', function() {
 		drawWebGL();
-	})
+		document.getElementById('pxWidth').textContent = this.value;
+	}),
+	document.getElementById('objHeight').addEventListener('input', function() {
+		drawWebGL();
+		document.getElementById('pxHeight').textContent = this.value;
+	});
+
+	// 04 - 슬라이더 이벤트 핸들러
+	document.getElementById('translateX').addEventListener('input', function() {
+		drawWebGL();
+		document.getElementById('pxTX').textContent = this.value;
+	}),
+	document.getElementById('translateY').addEventListener('input', function() {
+		drawWebGL();
+		document.getElementById('pxTY').textContent = this.value;
+	});
 
 })();
 </script>
