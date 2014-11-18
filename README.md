@@ -170,6 +170,10 @@ mat4(
 
 ## Transformation
 
+>Affine변환된 열벡터 = 픽셀단위사용행렬\*Translation행렬\*Rotation행렬\*Scale행렬\*열벡터
+
+
+
 >참고 : http://duriansoftware.com/joe/An-intro-to-modern-OpenGL.-Chapter-3:-3D-transformation-and-projection.html
 
 ````
@@ -179,6 +183,7 @@ mat4(
 
 M1*M2*M3*V1 == (M1*M2)*M3*V1 == M1*(M2*M3)*V1 == M1*M2*(M3*V1)
 ````
+
 
 
 

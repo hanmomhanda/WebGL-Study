@@ -1,10 +1,21 @@
 <body>
 <div id='propertyContainer'>
-    <label for='rotateX'>X축 회전각 : </label><input id='rotateX' type='text' placeholder='X축 기준 회전 각도 입력' value='0'>
-    <label for='rotateY'>Y축 회전각 : </label><input id='rotateY' type='text' placeholder='Y축 기준 회전 각도 입력' value='0'>
-    <label for='rotateZ'>Z축 회전각 : </label><input id='rotateZ' type='text' placeholder='Z축 기준 회전 각도 입력' value='0'>
+    <label for='objWidth'>너비 : </label><input id='objWidth' type='text' placeholder='너비를 픽셀 단위로 입력' value='100'>
+    <label for='objHeight'>높이 : </label><input id='objHeight' type='text' placeholder='높이를 픽셀 단위로 입력' value='100'>
+    <br/>
+    <label for='translateX'>X축 이동 : </label><input id='translateX' type='text' placeholder='X축 이동값을 픽셀 단위로 입력' value='0'>
+    <label for='translateY'>Y축 이동 : </label><input id='translateY' type='text' placeholder='Y축 이동값을 픽셀 단위로 입력' value='0'>
+    <label for='translateZ'>Z축 이동 : </label><input id='translateZ' type='text' placeholder='Z축 이동값을 픽셀 단위로 입력' value='0' readonly="true">
+    <br/>
+    <label for='rotateX'>X축 회전각 : </label><input id='rotateX' type='text' placeholder='X축 기준 회전 각도를 도 단위로 입력' value='0'>
+    <label for='rotateY'>Y축 회전각 : </label><input id='rotateY' type='text' placeholder='Y축 기준 회전 각도를 도 단위로 입력' value='0'>
+    <label for='rotateZ'>Z축 회전각 : </label><input id='rotateZ' type='text' placeholder='Z축 기준 회전 각도를 도 단위로 입력' value='0'>
+    <br/>
+    <label for='viewportWidth'>Viewport 너비 : </label><input id='viewportWidth' type='text' placeholder='viewport 너비를 픽셀 단위로 입력' value='800'>
+    <label for='viewportHeight'>Viewport 높이 : </label><input id='viewportHeight' type='text' placeholder='viewport 높이를 픽셀 단위 입력' value='400'>
     <button id='btnRedraw'>다시 그리기</button>
 </div>
+<br/>
 <canvas id="glCanvas" width="1000" height="500"></canvas>
 <script>
 
@@ -94,27 +105,39 @@
             " gl_FragColor = vec4(vColor, 1.0);"+
             "}"
     var firstProgram=setProgram(vertexShaderStr, fragmentShaderStr)
-    var viewportWidth, viewportHright
-    if(cvs)  viewportWidth=cvs.width, viewportHeight=cvs.height
-    gl.viewport(0, 0, parseInt(cvs.width), +parseInt(cvs.height));
-    var pixelMatrix=[
-        2/viewportWidth, 0, 0, 0,
-        0, 2/viewportHeight, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1
-    ]
-    console.log(pixelMatrix)
-    var rotations=[0, 0, 0]
-    var scales=[100, 100, 1]
-    var position = [100,0,0]
+
+
     function render(){
-        // rotations[0] += 0.1
-        // rotations[1] += 0.1
-        // rotations[2]+=0.01
-        var _RADIAN = Math.PI/180;
-        rotations[0] = parseFloat(document.getElementById('rotateX').value)*_RADIAN,
-        rotations[1] = parseFloat(document.getElementById('rotateY').value)*_RADIAN,
-        rotations[2] = parseFloat(document.getElementById('rotateZ').value)*_RADIAN,
+        var viewportWidth, viewportHright;
+        cvs.width = document.getElementById('viewportWidth').value,
+        cvs.height = document.getElementById('viewportHeight').value;
+        if(cvs)  viewportWidth=cvs.width, viewportHeight=cvs.height
+        gl.viewport(0, 0, parseInt(cvs.width), +parseInt(cvs.height));
+        var pixelMatrix=[
+            2/viewportWidth, 0, 0, 0,
+            0, 2/viewportHeight, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 1
+        ]
+        console.log(pixelMatrix)
+        var _RADIAN = Math.PI/180,
+            rotations=[
+                parseFloat(document.getElementById('rotateX').value)*_RADIAN,
+                parseFloat(document.getElementById('rotateY').value)*_RADIAN,
+                parseFloat(document.getElementById('rotateZ').value)*_RADIAN
+            ],
+            scales=[
+                parseFloat(document.getElementById('objWidth').value),
+                parseFloat(document.getElementById('objHeight').value),
+                1
+            ],
+            position = [
+                parseFloat(document.getElementById('translateX').value),
+                parseFloat(document.getElementById('translateY').value),
+                parseFloat(document.getElementById('translateZ').value)
+            ];
+
+
         gl.clearColor(0, 0, 0, 1)
         gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT)
         gl.useProgram(firstProgram)

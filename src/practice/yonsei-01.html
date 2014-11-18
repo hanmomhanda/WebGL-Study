@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>WebGL Drawing - Yonsei Project</title>
-<script type="text/javascript" src="lib/gl-matrix-min.js"></script>
+<script type="text/javascript" src="gl-matrix-min.js"></script>
 </head>
 <body>
 	<div id='container'>
@@ -34,7 +34,7 @@ void main(void) {
 attribute vec3 aVertexPosition;
 attribute vec3 aVertexColor;
 
-// 
+//
 uniform mat4 uMVMatrix;
 uniform mat4 uPMatrix;
 
@@ -72,7 +72,7 @@ void main(void) {
 			near : 0,
 			far : 1000
 		},
-		draw(gl, canvas, createCube(gl), shaderProgram, coordObj, perspectiveObj),			
+		draw(gl, canvas, createCube(gl), shaderProgram, coordObj, perspectiveObj),
 		draw(gl, canvas, createSection(gl), shaderProgram, coordObj, perspectiveObj);
 	},
 
@@ -83,13 +83,13 @@ void main(void) {
 	    } catch (e) {
 	    		msg = "Error creating WebGL Context!: " + e.toString();
 	    }
-	
+
 	    if (!gl) {
 			alert(msg);
 	    		throw new Error(msg);
 	    }
 
-        return gl;  
+        return gl;
 	},
 
 	initViewport = function(gl, canvas) {
@@ -102,7 +102,7 @@ void main(void) {
 		var vertexBuffer = gl.createBuffer(),
 			colorBuffer = gl.createBuffer(),
 			indexBuffer = gl.createBuffer(),
-			
+
 			vertices = [
 				0,0,0,
 				0,0,0.375679136521,
@@ -127,7 +127,7 @@ void main(void) {
 				1,1.81878363324,0,
 				0,2.19314121426,0
 			],
-			indices = [				
+			indices = [
 				 4, 15, 16,	 4, 16, 17,
 				15, 14,  0,	15,  0, 16,
 				14,  9,  0,	 9,  0, 13,
@@ -158,7 +158,7 @@ void main(void) {
 				0.85, 0.85, 0.85, 0.3,
 				0.85, 0.85, 0.85, 0.3,
 				0.85, 0.85, 0.85, 0.3
-			],			
+			],
 			cube = {
 				vertexBuffer : vertexBuffer,
 				colorBuffer : colorBuffer,
@@ -184,7 +184,7 @@ void main(void) {
 		var vertexBuffer = gl.createBuffer(),
 			colorBuffer = gl.createBuffer(),
 			indexBuffer = gl.createBuffer(),
-			
+
 			vertices = [
 				0,0,0,
 				0,0,0.375679136521,
@@ -278,7 +278,7 @@ void main(void) {
 			return null;
 		}
 
-		gl.shaderSource(shader, shaderScript.textContent);		
+		gl.shaderSource(shader, shaderScript.textContent);
 		gl.compileShader(shader);
 
 		if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
@@ -326,10 +326,10 @@ void main(void) {
 
 	getModelViewMatrix = function(mvMatrixParam) {
 		modelViewMatrix = mat4.create();
-		mat4.translate(modelViewMatrix, modelViewMatrix, 
+		mat4.translate(modelViewMatrix, modelViewMatrix,
 			[mvMatrixParam.translate.x, mvMatrixParam.translate.y, mvMatrixParam.translate.z]);
-		mat4.rotate(modelViewMatrix, modelViewMatrix, 
-			mvMatrixParam.rotate.angle*Math.PI/180, 
+		mat4.rotate(modelViewMatrix, modelViewMatrix,
+			mvMatrixParam.rotate.angle*Math.PI/180,
 			[mvMatrixParam.rotate.x, mvMatrixParam.rotate.y, mvMatrixParam.rotate.z]);
 
 		return modelViewMatrix;
@@ -337,8 +337,8 @@ void main(void) {
 
 	getProjectionMatrix = function(canvas, pMatrixParam) {
 		var projectionMatrix = mat4.create();
-		mat4.perspective(projectionMatrix, 
-			pMatrixParam.angle*Math.PI/180, canvas.width / canvas.height, 
+		mat4.perspective(projectionMatrix,
+			pMatrixParam.angle*Math.PI/180, canvas.width / canvas.height,
 			pMatrixParam.near, pMatrixParam.far);
 
 		return projectionMatrix;
@@ -346,7 +346,7 @@ void main(void) {
 
 	draw = function(gl, canvas, objToDraw, shaderProgram, mvMatrixParam, pMatrixParam) {
 		var modelViewMatrix = getModelViewMatrix(mvMatrixParam),
-			projectionMatrix = getProjectionMatrix(canvas, pMatrixParam);		
+			projectionMatrix = getProjectionMatrix(canvas, pMatrixParam);
 
 		// set the shader to use
 		gl.useProgram(shaderProgram);
@@ -354,8 +354,8 @@ void main(void) {
 		// connect up the shader parameters: vertex position and projection/model matrices
 		// set the vertex buffer to be drawn
 		gl.bindBuffer(gl.ARRAY_BUFFER, objToDraw.vertexBuffer);
-		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, objToDraw.vertSize, gl.FLOAT, false, 0, 0);		
-		
+		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, objToDraw.vertSize, gl.FLOAT, false, 0, 0);
+
 		gl.bindBuffer(gl.ARRAY_BUFFER, objToDraw.colorBuffer);
 		gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, objToDraw.colorSize, gl.FLOAT, false, 0, 0);
 

@@ -55,28 +55,36 @@ attribute vec3 aVertexPosition;
 // 03 - 픽셀 단위로 받은 vertex 값을 정규화 하는 데 필요한 Viewport 크기
 uniform vec2 uViewportSizeInPixel;
 
+// 03 - 픽셀 단위 사용을 위한 변환 행렬
+mat4 pixelUnitEnablerMatrix(vec2 vp) {
+	return mat4(
+		2.0/vp[0], 0, 0, 0,
+		0, 2.0/vp[1], 0, 0,
+		0, 0, 0, 0,
+		0, 0, 0, 1
+	);
+}
+
 // 04 - 픽셀 단위 좌표 이동값이 들어 있는 벡터
 uniform vec3 uTranslation;
 
-// 04 - 픽셀 단위로 받은 좌표 이동 값을 정규화 해서 이동 변환 행렬 생성 및 반환
-mat4 getTranslationMatrix(vec3 t, vec2 vp) {
+// 04 - x, y, z 방향 픽셀 단위 이동 행렬
+mat4 translationMatrix(vec3 t) {
 	return mat4(
 		1, 0, 0, 0,
 		0, 1, 0, 0,
 		0, 0, 1, 0,
-		t[0]*2.0/vp[0], t[1]*2.0/vp[1], t[2], 1 // 정규화 하면서 2를 곱하는 이유 설명 필요
+		t[0], t[1], t[2], 1
 	);
 }
 
 void main(void) {
 	// 01 - 각 vertex의 위치 계산
-	// 03 - 픽셀 단위로 받은 vertex 값을 정규화
+	// 03 - 픽셀 단위 사용 행렬 적용
 	// 04 - 이동 변환 적용
-	gl_Position = getTranslationMatrix(uTranslation, uViewportSizeInPixel)
-					*vec4(aVertexPosition[0]/uViewportSizeInPixel[0],
-						aVertexPosition[1]/uViewportSizeInPixel[1],
-						aVertexPosition[2],
-						1.0);
+	gl_Position = pixelUnitEnablerMatrix(uViewportSizeInPixel)
+					*translationMatrix(uTranslation)
+					*vec4(aVertexPosition, 1.0);
 }
 
 </script>
@@ -146,12 +154,11 @@ void main(void) {
 			indexBuffer = gl.createBuffer(), // 02 - 인덱스 버퍼 추가
 			w = parseFloat(document.getElementById('objWidth').value), // 03 - 픽셀 단위로 입력 받은 값
 			h = parseFloat(document.getElementById('objHeight').value), // 03 - 픽셀 단위로 입력 받은 값
-
-			vertices = [ // 03 - 입력받은 픽셀 단위로 변경
-				 w,  h,  0.0,
-				-w,  h,  0.0,
-				-w, -h,  0.0,
-				 w, -h,  0.0
+			vertices = [ // 03 - 입력받은 픽셀 단위로 변경, 원점 중심이므로 좌우상하로 1/2씩
+				 w/2.0,  h/2.0,  0.0,
+				-w/2.0,  h/2.0,  0.0,
+				-w/2.0, -h/2.0,  0.0,
+				 w/2.0, -h/2.0,  0.0
 			],
 			// 02 - vertices의 꼭지점 별 인덱스로 삼각형 구성
 			// 02 - 인덱스 배열 내의 원소를 세 개씩 잘라서 이루는 삼각형이 겹치지만 않으면 인덱스 번호 순서는 무관
