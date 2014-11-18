@@ -1,15 +1,15 @@
 <body>
 <div id='propertyContainer'>
-    <label for='objWidth'>너비 : </label><input id='objWidth' type='text' placeholder='너비를 픽셀 단위로 입력' value='100'>
-    <label for='objHeight'>높이 : </label><input id='objHeight' type='text' placeholder='높이를 픽셀 단위로 입력' value='100'>
+    <label for='objWidth'>너비 : </label><input id='objWidth' type='range' min='0' max='800' value='100'><span id='pxWidth'>100</span>
+    <label for='objHeight'>높이 : </label><input id='objHeight' type='range' min='0' max='400' value='100'><span id='pxHeight'>100</span>
     <br/>
-    <label for='translateX'>X축 이동 : </label><input id='translateX' type='text' placeholder='X축 이동값을 픽셀 단위로 입력' value='0'>
-    <label for='translateY'>Y축 이동 : </label><input id='translateY' type='text' placeholder='Y축 이동값을 픽셀 단위로 입력' value='0'>
-    <label for='translateZ'>Z축 이동 : </label><input id='translateZ' type='text' placeholder='Z축 이동값을 픽셀 단위로 입력' value='0' readonly="true">
+    <label for='translateX'>X축 이동 : </label><input id='translateX' type='range' min='-400' max='400' value='0'><span id='pxTX'>0</span>
+    <label for='translateY'>Y축 이동 : </label><input id='translateY' type='range' min='-200' max='200' value='0'><span id='pxTY'>0</span>
+    <label for='translateZ'>Z축 이동 : </label><input id='translateZ' type='range' min='-200' max='200' value='0' readonly="true"><span id='pxTZ'>0</span>
     <br/>
-    <label for='rotateX'>X축 회전각 : </label><input id='rotateX' type='text' placeholder='X축 기준 회전 각도를 도 단위로 입력' value='0'>
-    <label for='rotateY'>Y축 회전각 : </label><input id='rotateY' type='text' placeholder='Y축 기준 회전 각도를 도 단위로 입력' value='0'>
-    <label for='rotateZ'>Z축 회전각 : </label><input id='rotateZ' type='text' placeholder='Z축 기준 회전 각도를 도 단위로 입력' value='0'>
+    <label for='rotateX'>X축 회전각 : </label><input id='rotateX' type='range' min='-360' max='360' value='0'><span id='pxRX'>0</span>
+    <label for='rotateY'>Y축 회전각 : </label><input id='rotateY' type='range' min='-360' max='360' value='0'><span id='pxRY'>0</span>
+    <label for='rotateZ'>Z축 회전각 : </label><input id='rotateZ' type='range' min='-360' max='360' value='0'><span id='pxRZ'>0</span>
     <br/>
     <label for='viewportWidth'>Viewport 너비 : </label><input id='viewportWidth' type='text' placeholder='viewport 너비를 픽셀 단위로 입력' value='800'>
     <label for='viewportHeight'>Viewport 높이 : </label><input id='viewportHeight' type='text' placeholder='viewport 높이를 픽셀 단위 입력' value='400'>
@@ -60,7 +60,6 @@
         // 007강 uPosition 주소값 알아내기 Start
         program.uPosition=gl.getUniformLocation(program, "uPosition")
         // 007강 uPosition 주소값 알아내기 End
-        console.log(program)
         return program
     }
     var rectBuffer=setBuffer()
@@ -119,7 +118,7 @@
             0, 0, 0, 0,
             0, 0, 0, 1
         ]
-        console.log(pixelMatrix)
+
         var _RADIAN = Math.PI/180,
             rotations=[
                 parseFloat(document.getElementById('rotateX').value)*_RADIAN,
@@ -154,9 +153,43 @@
     // setInterval(render, 16)
     render();
 
+    // 03 - 슬라이더 이벤트 핸들러
+    document.getElementById('objWidth').addEventListener('input', function() {
+        render();
+        document.getElementById('pxWidth').textContent = this.value;
+    }),
+    document.getElementById('objHeight').addEventListener('input', function() {
+        render();
+        document.getElementById('pxHeight').textContent = this.value;
+    });
+
+    // 04 - 슬라이더 이벤트 핸들러
+    document.getElementById('translateX').addEventListener('input', function() {
+        render();
+        document.getElementById('pxTX').textContent = this.value;
+    }),
+    document.getElementById('translateY').addEventListener('input', function() {
+        render();
+        document.getElementById('pxTY').textContent = this.value;
+    });
+
+    // 05 - 슬라이더 이벤트 핸들러
+    document.getElementById('rotateX').addEventListener('input', function() {
+        render();
+        document.getElementById('pxRX').textContent = this.value;
+    }),
+    document.getElementById('rotateY').addEventListener('input', function() {
+        render();
+        document.getElementById('pxRY').textContent = this.value;
+    }),
+    document.getElementById('rotateZ').addEventListener('input', function() {
+        render();
+        document.getElementById('pxRZ').textContent = this.value;
+    }),
+    // 05 - Viewport Resize 핸들러
     document.getElementById('btnRedraw').addEventListener('click', function() {
         render();
-    })
+    });
 </script>
 
 
