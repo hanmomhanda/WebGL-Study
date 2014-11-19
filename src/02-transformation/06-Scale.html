@@ -2,10 +2,10 @@
 <html lang='ko'>
 <head>
 <meta charset="UTF-8">
-<meta name="title" content="WebGL - Rotation" />
-<meta name="subject" content="WebGL,Transformation,Rotation,Matrix,Vector" />
-<meta name="keywords" content="WebGL,Shader,Transformation,Rotation,Matrix,Vector" />
-<title>WebGL - Rotation</title>
+<meta name="title" content="WebGL - Scale" />
+<meta name="subject" content="WebGL,Transformation,Scale,Matrix,Vector" />
+<meta name="keywords" content="WebGL,Shader,Transformation,Scale,Matrix,Vector" />
+<title>WebGL - Scale</title>
 </head>
 <body>
 <!-- 03 - 픽셀 단위로 크기 설정 -->
@@ -16,13 +16,17 @@
 	<label for='objHeight'>높이 : </label><input class='slider' id='objHeight' type='range' min='0' max='400' value='100'><span id='pxHeight'>100</span>
 	<label for='objDepth'>깊이 : </label><input class='slider' id='objDepth' type='range' min='0' max='200' value='0'><span id='pxDepth'>0</span>
 	<br/>
-	<label for='translateX'>X축 방향 이동 : </label><input class='slider' id='translateX' type='range' min='-400' max='400' value='0'><span id='pxTX'>0</span>
-	<label for='translateY'>Y축 방향 이동 : </label><input class='slider' id='translateY' type='range' min='-200' max='200' value='0'><span id='pxTY'>0</span>
-	<label for='translateZ'>Z축 방향 이동 : </label><input class='slider' id='translateZ' type='range' min='-100' max='100' value='0'><span id='pxTZ'>0</span>
+	<label for='translateX'>X축 이동 : </label><input class='slider' id='translateX' type='range' min='-400' max='400' value='0'><span id='pxTX'>0</span>
+	<label for='translateY'>Y축 이동 : </label><input class='slider' id='translateY' type='range' min='-200' max='200' value='0'><span id='pxTY'>0</span>
+	<label for='translateZ'>Z축 이동 : </label><input class='slider' id='translateZ' type='range' min='-100' max='100' value='0'><span id='pxTZ'>0</span>
 	<br/>
 	<label for='rotateX'>X축 회전각 : </label><input class='slider' id='rotateX' type='range' min='-360' max='360' value='0'><span id='pxRX'>0</span>
 	<label for='rotateY'>Y축 회전각 : </label><input class='slider' id='rotateY' type='range' min='-360' max='360' value='0'><span id='pxRY'>0</span>
 	<label for='rotateZ'>Z축 회전각 : </label><input class='slider' id='rotateZ' type='range' min='-360' max='360' value='0'><span id='pxRZ'>0</span>
+	<br/>
+	<label for='scaleX'>가로 확대 : </label><input class='slider' id='scaleX' type='range' min='0.0' max='4.0' value='1' step='0.1'><span id='SX'>1</span>
+	<label for='scaleY'>세로 확대 : </label><input class='slider' id='scaleY' type='range' min='0.0' max='4.0' value='1' step='0.1'><span id='SY'>1</span>
+	<label for='scaleZ'>깊이 확대 : </label><input class='slider' id='scaleZ' type='range' min='0.0' max='4.0' value='1' step='0.1'><span id='SZ'>1</span>
 	<br/>
 	<label for='viewportWidth'>Viewport 너비 : </label><input id='viewportWidth' type='text' placeholder='viewport 너비를 픽셀 단위로 입력' value='800'>
 	<label for='viewportHeight'>Viewport 높이 : </label><input id='viewportHeight' type='text' placeholder='viewport 높이를 픽셀 단위 입력' value='400'>
@@ -66,16 +70,6 @@ attribute vec3 aVertexPosition;
 // uniform vec2 uViewportSizeInPixel;
 // 04 - Viewport에 깊이를 추가해서 vec로
 uniform vec3 uViewportSizeInPixel;
-
-// 03 - 픽셀 단위 사용을 위한 변환 행렬
-// mat4 pixelUnitEnablerMatrix(vec2 vp) {
-// 	return mat4(
-// 		2.0/vp[0], 0, 0, 0,
-// 		0, 2.0/vp[1], 0, 0,
-// 		0, 0, 0, 0,
-// 		0, 0, 0, 1
-// 	);
-// }
 
 // 04 - 픽셀 단위 사용을 위한 변환 행렬, 깊이 반영
 mat4 pixelUnitEnablerMatrix(vec3 vp) {
@@ -135,14 +129,29 @@ mat4 rotationMatrix(vec3 r) {
 	return m3 * m2 * m1;
 }
 
+// 06 - 스케일 벡터
+uniform vec3 uScale;
+
+// 06 - 스케일 변환 행렬
+mat4 scaleMatrix(vec3 s) {
+	return mat4(
+		s[0], 0, 0, 0,
+		0, s[1], 0, 0,
+		0, 0, s[2], 0,
+		0, 0, 0, 1
+	);
+}
+
 void main(void) {
 	// 01 - 각 vertex의 위치 계산
 	// 03 - 픽셀 단위 사용 행렬 적용
 	// 04 - 이동 변환 적용
 	// 05 - 회전 변환 적용
+	// 06 - 스케일 변환 적용
 	gl_Position = pixelUnitEnablerMatrix(uViewportSizeInPixel)
 					*translationMatrix(uTranslation)
 					*rotationMatrix(uRotation)
+					*scaleMatrix(uScale)
 					*vec4(aVertexPosition, 1.0);
 }
 </script>
@@ -160,7 +169,8 @@ void main(void) {
 		var canvas, gl, shaderProgram,
 			tX, tY, tZ, // 04 - x, y, z 방향 이동 값
 			depth, // 04 - 절두체의 깊이
-			rX, rY, rZ, _RADIAN = Math.PI/180  // 05 - x, y, z 축 회전각, 라디안 변환 상수
+			rX, rY, rZ, _RADIAN = Math.PI/180,  // 05 - x, y, z 축 회전각, 라디안 변환 상수
+			sX, sY, sZ  // 06 - x, y, z 스케일
 		;
 		canvas = document.getElementById("webgl-canvas"),
 		gl = getWebGLContext(canvas),
@@ -175,14 +185,20 @@ void main(void) {
 		rX = parseFloat(document.getElementById('rotateX').value)*_RADIAN,
 		rY = parseFloat(document.getElementById('rotateY').value)*_RADIAN,
 		rZ = parseFloat(document.getElementById('rotateZ').value)*_RADIAN,
+		// 06 - x, y, z 축 스케일
+		sX = parseFloat(document.getElementById('scaleX').value),
+		sY = parseFloat(document.getElementById('scaleY').value),
+		sZ = parseFloat(document.getElementById('scaleZ').value),
 		// 03 - 픽셀 단위 사용을 위해 viewport size 벡터를 넘겨준다.
 		// 04 - x, y, z 방향 이동 벡터 파라미터 추가
 		// 04 - 픽셀 단위 사용을 위한 벡터에 깊이 추가
 		// 05 - x, y, z 축 회전각 파라미터 추가
+		// 06 - x, y, z 축 스케일 파라미터 추가
 		draw(gl, createRectangle(gl),
 			[gl.drawingBufferWidth, gl.drawingBufferHeight, depth],
 			[tX, tY, tZ],
 			[rX, rY, rZ],
+			[sX, sY, sZ],
 			shaderProgram
 		);
 	},
@@ -319,8 +335,10 @@ void main(void) {
 	 * 01 - WebGL 컨텍스트와 그릴 도형 객체, Shader Program 객체를 전달해서 도형을 그린다.
 	 * 04 - x, y, z 방향 이동을 위한 translationArray 파라미터 추가
 	 * 05 - x, y, z 축 기준 회전을 위한 rotationArray 파라미터 추가
+	 * 06 - x, y, z 축 스케일을 위한 scaleArray 파라미터 추가
 	 */
-	draw = function(gl, objToDraw, viewportSizeArray, translationArray, rotationArray, shaderProgram) {
+	draw = function(gl, objToDraw, viewportSizeArray, 
+					translationArray, rotationArray, scaleArray, shaderProgram) {
 
 		// 01 - 그릴 때 사용할 Shader Program 지정
 		gl.useProgram(shaderProgram);
@@ -353,6 +371,11 @@ void main(void) {
 		shaderProgram.rotationUniform = gl.getUniformLocation(shaderProgram, "uRotation");
 		gl.uniform3fv(shaderProgram.rotationUniform, rotationArray);
 
+		// 06 - x, y, z 스케일을 위한 벡터를 Shader Program에 밀어 넣는다.
+		// 06 - 계산에 사용되는 행렬이나 벡터는 버퍼를 거치지 않는다.
+		shaderProgram.scaleUniform = gl.getUniformLocation(shaderProgram, "uScale");
+		gl.uniform3fv(shaderProgram.scaleUniform, scaleArray);
+
 		// 01 - Index Buffer가 있으면 Index Buffer를 이용해서 drawElements()로 그리고,
 		// 01 - Index Buffer가 없으면 Vertex의 개수를 알려주고 drawArrays()로 그린다.
 		if (objToDraw.indexBuffer)
@@ -361,49 +384,8 @@ void main(void) {
 			gl.drawArrays(objToDraw.primtype, 0, objToDraw.nVerts);
 	};
 
-	drawWebGL();
+	drawWebGL(),
 
-	// // 03 - 슬라이더 이벤트 핸들러
-	// document.getElementById('objWidth').addEventListener('input', function() {
-	// 	drawWebGL();
-	// 	document.getElementById('pxWidth').textContent = this.value;
-	// }),
-	// document.getElementById('objHeight').addEventListener('input', function() {
-	// 	drawWebGL();
-	// 	document.getElementById('pxHeight').textContent = this.value;
-	// }),
-	// document.getElementById('objDepth').addEventListener('input', function() {
-	// 	drawWebGL();
-	// 	document.getElementById('pxDepth').textContent = this.value;
-	// });
-
-	// // 04 - 슬라이더 이벤트 핸들러
-	// document.getElementById('translateX').addEventListener('input', function() {
-	// 	drawWebGL();
-	// 	document.getElementById('pxTX').textContent = this.value;
-	// }),
-	// document.getElementById('translateY').addEventListener('input', function() {
-	// 	drawWebGL();
-	// 	document.getElementById('pxTY').textContent = this.value;
-	// }),
-	// document.getElementById('translateZ').addEventListener('input', function() {
-	// 	drawWebGL();
-	// 	document.getElementById('pxTZ').textContent = this.value;
-	// });
-
-	// // 05 - 슬라이더 이벤트 핸들러
-	// document.getElementById('rotateX').addEventListener('input', function() {
-	// 	drawWebGL();
-	// 	document.getElementById('pxRX').textContent = this.value;
-	// }),
-	// document.getElementById('rotateY').addEventListener('input', function() {
-	// 	drawWebGL();
-	// 	document.getElementById('pxRY').textContent = this.value;
-	// }),
-	// document.getElementById('rotateZ').addEventListener('input', function() {
-	// 	drawWebGL();
-	// 	document.getElementById('pxRZ').textContent = this.value;
-	// }),
 
 	// 03- 슬라이더 이벤트 핸들러
 	Array.prototype.slice.call(document.querySelectorAll('.slider'))
@@ -412,7 +394,7 @@ void main(void) {
 				drawWebGL();
 				element.nextSibling.innerText = element.value;
 			});
-		});
+		}),
 	
 	// 05 - Viewport Resize 핸들러
 	document.getElementById('btnRedraw').addEventListener('click', function() {
