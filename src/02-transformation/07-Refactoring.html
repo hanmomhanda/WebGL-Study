@@ -2,13 +2,15 @@
 <html lang='ko'>
 <head>
 <meta charset="UTF-8">
-<meta name="title" content="WebGL - Dragging a Polygon" />
-<meta name="subject" content="WebGL,Transformation,Dragging,Matrix,Vector" />
-<meta name="keywords" content="WebGL,Shader,Transformation,Dragging,Matrix,Vector" />
-<title>WebGL - Dragging a Polygon</title>
+<meta name="title" content="WebGL - Refactoring" />
+<meta name="subject" content="WebGL,Transformation,Refactoring,Matrix,Vector" />
+<meta name="keywords" content="WebGL,Shader,Transformation,Refactoring,Matrix,Vector" />
+<title>WebGL - Refactoring</title>
 </head>
 <body>
-<div id='propertyContainer'>	
+<div id='propertyContainer'>
+	<label for='objWidth'>너비 : </label><input class='slider' id='objWidth' type='range' min='0' max='800' value='100'><span id='pxWidth'>100</span>
+	<label for='objHeight'>높이 : </label><input class='slider' id='objHeight' type='range' min='0' max='400' value='100'><span id='pxHeight'>100</span>
 	<label for='objDepth'>깊이 : </label><input class='slider' id='objDepth' type='range' min='0' max='200' value='0'><span id='pxDepth'>0</span>
 	<br/>
 	<label for='translateX'>X축 이동 : </label><input class='slider' id='translateX' type='range' min='-400' max='400' value='0'><span id='pxTX'>0</span>
@@ -21,15 +23,11 @@
 	<br/>
 	<label for='scaleX'>가로 확대 : </label><input class='slider' id='scaleX' type='range' min='0.0' max='4.0' value='1' step='0.1'><span id='SX'>1</span>
 	<label for='scaleY'>세로 확대 : </label><input class='slider' id='scaleY' type='range' min='0.0' max='4.0' value='1' step='0.1'><span id='SY'>1</span>
-	<label for='scaleZ'>깊이 확대 : </label><input class='slider' id='scaleZ' type='range' min='0.0' max='4.0' value='1' step='0.1'><span id='SZ'>1</span>
-	<br/>
-	<label for='polygonN'>N각형 : </label><input class='slider' id='polygonN' type='range' min='3' max='16' value='8'><span id='polyN'>8</span>
+	<label for='scaleZ'>깊이 확대 : </label><input class='slider' id='scaleZ' type='range' min='0.0' max='4.0' value='1' step='0.1'><span id='SZ'>1</span>	
 	<br/>	
 	<label for='viewportWidth'>Viewport 너비 : </label><input id='viewportWidth' type='text' placeholder='viewport 너비를 픽셀 단위로 입력' value='800'>
 	<label for='viewportHeight'>Viewport 높이 : </label><input id='viewportHeight' type='text' placeholder='viewport 높이를 픽셀 단위 입력' value='400'>
 	<button id='btnRedraw'>다시 그리기</button>
-	<br/><br/>
-	<div>Canvas 위에서 마우스를 드래그 해보세요.</div>
 </div>
 <br/>
 <canvas id="webgl-canvas" style="border: none;" width="800" height="400"></canvas>
@@ -136,22 +134,21 @@ void main(void) {
 </script>
 <script>
 ;(function() {
-	var drawWebGL = function(canvas, x, y, z) {
+	var drawWebGL = function(canvas) {
 		var canvas, gl, shaderProgram,
 			tX, tY, tZ,
 			depth,
 			rX, rY, rZ, _RADIAN = Math.PI/180,
-			sX, sY, sZ,
-			beginMode, pN
+			sX, sY, sZ
 		;
 		// canvas = document.getElementById("webgl-canvas"),
 		gl = getWebGLContext(canvas),
 		initViewport(gl, canvas),
 		shaderProgram = getShaderProgram(gl, getShader(gl, "shader-vs"), getShader(gl, "shader-fs")),
 		
-		tX = x ? x : parseFloat(document.getElementById('translateX').value),
-		tY = y ? y : parseFloat(document.getElementById('translateY').value),
-		tZ = z ? z : parseFloat(document.getElementById('translateZ').value),
+		tX = parseFloat(document.getElementById('translateX').value),
+		tY = parseFloat(document.getElementById('translateY').value),
+		tZ = parseFloat(document.getElementById('translateZ').value),
 		depth = parseInt(document.getElementById('objDepth').max) - parseInt(document.getElementById('objDepth').min),
 		
 		rX = parseFloat(document.getElementById('rotateX').value)*_RADIAN,
@@ -162,9 +159,7 @@ void main(void) {
 		sY = parseFloat(document.getElementById('scaleY').value),
 		sZ = parseFloat(document.getElementById('scaleZ').value),
 
-		pN = parseInt(document.getElementById('polygonN').value),
-
-		draw(gl, createRegularPolygon(gl, pN),
+		draw(gl, createRectangle(gl),
 			[gl.drawingBufferWidth, gl.drawingBufferHeight, depth],
 			[tX, tY, tZ],
 			[rX, rY, rZ],
@@ -197,31 +192,27 @@ void main(void) {
 		gl.clear(gl.COLOR_BUFFER_BIT);
 	},
 
-	createRegularPolygon = function(gl, pN) {
+	createRectangle = function(gl) {
 		var vertexBuffer = gl.createBuffer(),
-			coreHeight = 100, i,
+			w = parseFloat(document.getElementById('objWidth').value),
+			h = parseFloat(document.getElementById('objHeight').value),
 			d = parseFloat(document.getElementById('objDepth').value),
-			polygon, vArr = [ 0.0, coreHeight, d ], vertCoords = 3,
-			c = Math.cos, s = Math.sin, mRound = Math.round,
-			_PI = Math.PI, _RADIAN = _PI/180, angle = 2*_PI/pN
-		;
-		for ( i = 0 ; i < pN - 1 ; i= i/vertCoords + 1 ) {
-		 	vArr.push(
-		 		vArr[i*=vertCoords]*c(angle) - vArr[++i]*s(angle),
-		 		vArr[--i]*s(angle) + vArr[++i]*c(angle),
-		 		vArr[--i+2]
-		 	);
-		}
-		polygon = {
-			vertexBuffer : vertexBuffer,
-			vertCoords : vertCoords,
-			nVerts : pN,
-			primtype : gl.TRIANGLE_FAN
-		},
+			vertices = [
+				 w/2.0,  h/2.0,  d/2.0,
+				-w/2.0,  h/2.0,  d/2.0,
+				-w/2.0, -h/2.0,  d/2.0,
+				 w/2.0, -h/2.0,  d/2.0
+			],
+			rectangle = {
+				vertexBuffer : vertexBuffer,
+				vertSize : 3,
+				nVerts : 4,
+				primtype : gl.TRIANGLE_FAN				
+			};
 		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer),
-		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vArr), gl.STATIC_DRAW);
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
-		return polygon;
+		return rectangle;
 	},
 
 	getShader = function(gl, id) {
@@ -297,36 +288,17 @@ void main(void) {
 	};
 
 	(function () {
-		var canvas = document.getElementById("webgl-canvas"),
-			canvasB = canvas.getBoundingClientRect(),
-			x, y, primtype = 0,
-			mousedown;
+		var canvas = document.getElementById("webgl-canvas");
 
 		drawWebGL(canvas),
 
 		Array.prototype.slice.call(document.querySelectorAll('.slider'))
 			.forEach( function( element ) {
 				element.addEventListener('input', function() {
-					drawWebGL(canvas, x, y, 0),
+					drawWebGL(canvas),
 					element.nextSibling.innerHTML = element.value;
 				});
 			}),	
-
-		canvas.addEventListener('mousedown', function(e) {
-			mousedown = true;
-		}),
-
-		canvas.addEventListener('mouseup', function(e) {
-			mousedown = false;
-		}),
-
-		canvas.addEventListener('mousemove', function(e) {
-			if (mousedown) {
-				x = e.clientX - canvasB.left - canvasB.width/2,
-				y = canvasB.height/2 - (e.clientY - canvasB.top),
-				drawWebGL(canvas, x, y, 0);
-			}
-		}),
 
 		document.getElementById('btnRedraw').addEventListener('click', function() {
 			drawWebGL(canvas);

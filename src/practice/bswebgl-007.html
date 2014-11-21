@@ -1,16 +1,16 @@
 <body>
 <div id='propertyContainer'>
-    <label for='objWidth'>너비 : </label><input id='objWidth' type='range' min='0' max='800' value='100'><span id='pxWidth'>100</span>
-    <label for='objHeight'>높이 : </label><input id='objHeight' type='range' min='0' max='400' value='100'><span id='pxHeight'>100</span>
-    <label for='objDepth'>깊이 : </label><input id='objDepth' type='range' min='0' max='200' value='0'><span id='pxDepth'>0</span>
+    <label for='objWidth'>너비 : </label><input id='objWidth' class='slider' type='range' min='0' max='800' value='100'><span id='pxWidth'>100</span>
+    <label for='objHeight'>높이 : </label><input id='objHeight' class='slider' type='range' min='0' max='400' value='100'><span id='pxHeight'>100</span>
+    <label for='objDepth'>깊이 : </label><input id='objDepth' class='slider' type='range' min='0' max='200' value='0'><span id='pxDepth'>0</span>
     <br/>
-    <label for='translateX'>X축 이동 : </label><input id='translateX' type='range' min='-400' max='400' value='0'><span id='pxTX'>0</span>
-    <label for='translateY'>Y축 이동 : </label><input id='translateY' type='range' min='-200' max='200' value='0'><span id='pxTY'>0</span>
-    <label for='translateZ'>Z축 이동 : </label><input id='translateZ' type='range' min='-100' max='100' value='0'><span id='pxTZ'>0</span>
+    <label for='translateX'>X축 이동 : </label><input id='translateX' class='slider' type='range' min='-400' max='400' value='0'><span id='pxTX'>0</span>
+    <label for='translateY'>Y축 이동 : </label><input id='translateY' class='slider' type='range' min='-200' max='200' value='0'><span id='pxTY'>0</span>
+    <label for='translateZ'>Z축 이동 : </label><input id='translateZ' class='slider' type='range' min='-100' max='100' value='0'><span id='pxTZ'>0</span>
     <br/>
-    <label for='rotateX'>X축 회전각 : </label><input id='rotateX' type='range' min='-360' max='360' value='0'><span id='pxRX'>0</span>
-    <label for='rotateY'>Y축 회전각 : </label><input id='rotateY' type='range' min='-360' max='360' value='0'><span id='pxRY'>0</span>
-    <label for='rotateZ'>Z축 회전각 : </label><input id='rotateZ' type='range' min='-360' max='360' value='0'><span id='pxRZ'>0</span>
+    <label for='rotateX'>X축 회전각 : </label><input id='rotateX' class='slider' type='range' min='-360' max='360' value='0'><span id='pxRX'>0</span>
+    <label for='rotateY'>Y축 회전각 : </label><input id='rotateY' class='slider' type='range' min='-360' max='360' value='0'><span id='pxRY'>0</span>
+    <label for='rotateZ'>Z축 회전각 : </label><input id='rotateZ' class='slider' type='range' min='-360' max='360' value='0'><span id='pxRZ'>0</span>
     <br/>
     <label for='viewportWidth'>Viewport 너비 : </label><input id='viewportWidth' type='text' placeholder='viewport 너비를 픽셀 단위로 입력' value='800'>
     <label for='viewportHeight'>Viewport 높이 : </label><input id='viewportHeight' type='text' placeholder='viewport 높이를 픽셀 단위 입력' value='400'>
@@ -150,56 +150,19 @@
         gl.uniform3fv(firstProgram.uScale, scales)
         gl.uniform3fv(firstProgram.uPosition, position)
         gl.uniform3fv(firstProgram.uColor, [0.2, 0.4, 0.6])
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, rectBuffer.numItem);
+        // gl.drawArrays(gl.TRIANGLE_STRIP, 0, rectBuffer.numItem);
+        gl.drawArrays(gl.LINE_LOOP, 0, rectBuffer.numItem);
     }
     // setInterval(render, 16)
     render();
 
-    // 03 - 슬라이더 이벤트 핸들러
-    document.getElementById('objWidth').addEventListener('input', function() {
-        render();
-        document.getElementById('pxWidth').textContent = this.value;
-    }),
-    document.getElementById('objHeight').addEventListener('input', function() {
-        render();
-        document.getElementById('pxHeight').textContent = this.value;
-    }),
-    document.getElementById('objDepth').addEventListener('input', function() {
-        render();
-        document.getElementById('pxDepth').textContent = this.value;
-    });
-
-    // 04 - 슬라이더 이벤트 핸들러
-    document.getElementById('translateX').addEventListener('input', function() {
-        render();
-        document.getElementById('pxTX').textContent = this.value;
-    }),
-    document.getElementById('translateY').addEventListener('input', function() {
-        render();
-        document.getElementById('pxTY').textContent = this.value;
-    }),
-    document.getElementById('translateZ').addEventListener('input', function() {
-        render();
-        document.getElementById('pxTZ').textContent = this.value;
-    });
-
-    // 05 - 슬라이더 이벤트 핸들러
-    document.getElementById('rotateX').addEventListener('input', function() {
-        render();
-        document.getElementById('pxRX').textContent = this.value;
-    }),
-    document.getElementById('rotateY').addEventListener('input', function() {
-        render();
-        document.getElementById('pxRY').textContent = this.value;
-    }),
-    document.getElementById('rotateZ').addEventListener('input', function() {
-        render();
-        document.getElementById('pxRZ').textContent = this.value;
-    }),
-    // 05 - Viewport Resize 핸들러
-    document.getElementById('btnRedraw').addEventListener('click', function() {
-        render();
-    });
+    Array.prototype.slice.call(document.querySelectorAll('.slider'))
+            .forEach( function( element ) {
+                element.addEventListener('input', function() {
+                    element.nextSibling.innerText = element.value,
+                    render();
+                });
+            });
 </script>
 
 

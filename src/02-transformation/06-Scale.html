@@ -261,6 +261,7 @@ void main(void) {
 				indexBuffer : indexBuffer, // 02 - 인덱스 버퍼 추가
 				vertSize : 3,
 				nVerts : 4,
+				primtype : gl.TRIANGLES,
 				indexLength : indices.length // 02 - 인덱스 배열 길이 추가
 				// 02 - 인덱스 버퍼를 쓰면 drawElements()를 쓰므로 primtype 필요 없음
 				// 02 - primtype : gl.TRIANGLES
@@ -392,7 +393,7 @@ void main(void) {
 		.forEach( function( element ) {
 			element.addEventListener('input', function() {
 				drawWebGL();
-				element.nextSibling.innerText = element.value;
+				element.nextSibling.innerHTML = element.value;
 			});
 		}),
 	

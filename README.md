@@ -23,12 +23,15 @@
 
 ><a href='http://hanmomhanda.github.io/WebGL-Study/src/02-transformation/06-Scale.html' target='_blank'>06. 스케일 변환</a>
 
+><a href='http://hanmomhanda.github.io/WebGL-Study/src/02-transformation/07-Refactoring.html' target='_blank'>07. 리펙터링</a>
 
 ### Playground
 
 ><a href='http://hanmomhanda.github.io/WebGL-Study/src/03-playground/Drawing-a-Regular-Polygon.html' target='_blank'>정N각형 그리기</a>
 
 ><a href='http://hanmomhanda.github.io/WebGL-Study/src/03-playground/Dragging-a-Regular-Polygon.html' target='_blank'>정N각형 마우스 드래깅</a>
+
+><a href='http://hanmomhanda.github.io/WebGL-Study/src/03-playground/Drawing-Modes.html' target='_blank'>그리기 모드(Begin Mode)</a>
 
 
 
@@ -326,6 +329,12 @@ M1*M2*M3*V1 == (M1*M2)*M3*V1 == M1*(M2*M3)*V1 == M1*M2*(M3*V1)
     >현재 WebGL context에 있는 정보를 토대로 렌더링한다.(추측 GPU로 shaderProgram을 전달한다)
 
 - drawElements
+
+
+## 그리기 모드
+
+><img src='http://antongerdelan.net/webgl/images/draw_modes.png' alt='WebGL 그리기 모드'>
+>출처 : http://antongerdelan.net/webgl/vertexbuffers.html
 
 
 ## 주요 상수

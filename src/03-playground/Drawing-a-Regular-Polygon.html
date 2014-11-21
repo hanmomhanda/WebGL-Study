@@ -2,16 +2,13 @@
 <html lang='ko'>
 <head>
 <meta charset="UTF-8">
-<meta name="title" content="WebGL - Regular Polygon" />
-<meta name="subject" content="WebGL,Transformation,Scale,Matrix,Vector,Regular Polygon" />
-<meta name="keywords" content="WebGL,Shader,Transformation,Scale,Matrix,Vector,Regular Polygon" />
-<title>WebGL - Regular Polygon</title>
+<meta name="title" content="WebGL - Drawing a Regular Polygon" />
+<meta name="subject" content="WebGL,Transformation,Polygon,Matrix,Vector" />
+<meta name="keywords" content="WebGL,Shader,Transformation,Polygon,Matrix,Vector" />
+<title>WebGL - Drawing a Regular Polygon</title>
 </head>
 <body>
-<!-- 03 - 픽셀 단위로 크기 설정 -->
-<!-- 04 - 픽셀 단위 이동 값 설정 -->
-<!-- 05 - 축 기준 회전값, viewport 크기 설정 -->
-<div id='propertyContainer'>
+<div id='propertyContainer'>	
 	<label for='objDepth'>깊이 : </label><input class='slider' id='objDepth' type='range' min='0' max='200' value='0'><span id='pxDepth'>0</span>
 	<br/>
 	<label for='translateX'>X축 이동 : </label><input class='slider' id='translateX' type='range' min='-400' max='400' value='0'><span id='pxTX'>0</span>
@@ -26,16 +23,13 @@
 	<label for='scaleY'>세로 확대 : </label><input class='slider' id='scaleY' type='range' min='0.0' max='4.0' value='1' step='0.1'><span id='SY'>1</span>
 	<label for='scaleZ'>깊이 확대 : </label><input class='slider' id='scaleZ' type='range' min='0.0' max='4.0' value='1' step='0.1'><span id='SZ'>1</span>
 	<br/>
+	<label for='polygonN'>N각형 : </label><input class='slider' id='polygonN' type='range' min='3' max='16' value='8'><span id='polyN'>8</span>
+	<br/>	
 	<label for='viewportWidth'>Viewport 너비 : </label><input id='viewportWidth' type='text' placeholder='viewport 너비를 픽셀 단위로 입력' value='800'>
 	<label for='viewportHeight'>Viewport 높이 : </label><input id='viewportHeight' type='text' placeholder='viewport 높이를 픽셀 단위 입력' value='400'>
-	<br/>
-	<label for='polygonN'>N각형 : </label><input class='slider' id='polygonN' type='range' min='3' max='60' value='3'><span id='polyN'>3</span>
 	<button id='btnRedraw'>다시 그리기</button>
 </div>
 <br/>
-<!-- 03 - 픽셀 단위로 크기 설정 -->
-<!-- 04 - 픽셀 단위 이동 값 설정 -->
-<!-- 05 - 축 기준 회전값, viewport 크기 설정 -->
 <canvas id="webgl-canvas" style="border: none;" width="800" height="400"></canvas>
 <hr/>
 <footer>
@@ -58,20 +52,14 @@
 </footer>
 <script id="shader-fs" type="x-shader/x-fragment">
 void main(void) {
-	// 01 - r, g, b, a 색상 벡터
 	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 }
 </script>
 <script id="shader-vs" type="x-shader/x-vertex">
-// 01 - 직사각형 geometry를 구성하는 vertex buffer
 attribute vec3 aVertexPosition;
 
-// 03 - 픽셀 단위로 받은 vertex 값을 정규화 하는 데 필요한 Viewport 크기
-// uniform vec2 uViewportSizeInPixel;
-// 04 - Viewport에 깊이를 추가해서 vec로
 uniform vec3 uViewportSizeInPixel;
 
-// 04 - 픽셀 단위 사용을 위한 변환 행렬, 깊이 반영
 mat4 pixelUnitEnablerMatrix(vec3 vp) {
 	return mat4(
 		2.0/vp[0], 0, 0, 0,
@@ -81,10 +69,8 @@ mat4 pixelUnitEnablerMatrix(vec3 vp) {
 	);
 }
 
-// 04 - 픽셀 단위 좌표 이동값이 들어 있는 벡터
 uniform vec3 uTranslation;
 
-// 04 - x, y, z 방향 픽셀 단위 이동 행렬
 mat4 translationMatrix(vec3 t) {
 	return mat4(
 		1, 0, 0, 0,
@@ -94,10 +80,8 @@ mat4 translationMatrix(vec3 t) {
 	);
 }
 
-// 05 - 좌표를 회전해주는 벡터
 uniform vec3 uRotation;
 
-// 05 - 좌표를 회전해주는 벡터에서 4*4 행렬 생성 및 반환
 mat4 rotationMatrix(vec3 r) {
 	float s, c;
 
@@ -129,10 +113,8 @@ mat4 rotationMatrix(vec3 r) {
 	return m3 * m2 * m1;
 }
 
-// 06 - 스케일 벡터
 uniform vec3 uScale;
 
-// 06 - 스케일 변환 행렬
 mat4 scaleMatrix(vec3 s) {
 	return mat4(
 		s[0], 0, 0, 0,
@@ -143,11 +125,6 @@ mat4 scaleMatrix(vec3 s) {
 }
 
 void main(void) {
-	// 01 - 각 vertex의 위치 계산
-	// 03 - 픽셀 단위 사용 행렬 적용
-	// 04 - 이동 변환 적용
-	// 05 - 회전 변환 적용
-	// 06 - 스케일 변환 적용
 	gl_Position = pixelUnitEnablerMatrix(uViewportSizeInPixel)
 					*translationMatrix(uTranslation)
 					*rotationMatrix(uRotation)
@@ -157,45 +134,34 @@ void main(void) {
 </script>
 <script>
 ;(function() {
-	/**
-	 * 01 - WebGL 실행 기본 구조
-	 *
-	 *   <canvas>에서 WebGL 컨텍스트를 가자와서
-	 *   Viewport를 설정하고,
-	 *   ShaderProgram을 구성하고,
-	 *   그린다.
-	 */
-	var drawWebGL = function() {
+	var drawWebGL = function(canvas) {
 		var canvas, gl, shaderProgram,
-			tX, tY, tZ, // 04 - x, y, z 방향 이동 값
-			depth, // 04 - 절두체의 깊이
-			rX, rY, rZ, _RADIAN = Math.PI/180,  // 05 - x, y, z 축 회전각, 라디안 변환 상수
-			sX, sY, sZ  // 06 - x, y, z 스케일
+			tX, tY, tZ,
+			depth,
+			rX, rY, rZ, _RADIAN = Math.PI/180,
+			sX, sY, sZ,
+			pN
 		;
-		canvas = document.getElementById("webgl-canvas"),
+		// canvas = document.getElementById("webgl-canvas"),
 		gl = getWebGLContext(canvas),
 		initViewport(gl, canvas),
 		shaderProgram = getShaderProgram(gl, getShader(gl, "shader-vs"), getShader(gl, "shader-fs")),
-		// 04 - x, y, z 방향 이동 값, 절두체의 깊이
+		
 		tX = parseFloat(document.getElementById('translateX').value),
 		tY = parseFloat(document.getElementById('translateY').value),
 		tZ = parseFloat(document.getElementById('translateZ').value),
 		depth = parseInt(document.getElementById('objDepth').max) - parseInt(document.getElementById('objDepth').min),
-		// 05 - x, y, z 축 회전각 - 라디안 기준
+		
 		rX = parseFloat(document.getElementById('rotateX').value)*_RADIAN,
 		rY = parseFloat(document.getElementById('rotateY').value)*_RADIAN,
 		rZ = parseFloat(document.getElementById('rotateZ').value)*_RADIAN,
-		// 06 - x, y, z 축 스케일
+		
 		sX = parseFloat(document.getElementById('scaleX').value),
 		sY = parseFloat(document.getElementById('scaleY').value),
 		sZ = parseFloat(document.getElementById('scaleZ').value),
-		// playground
-		pN = parseFloat(document.getElementById('polygonN').value),
-		// 03 - 픽셀 단위 사용을 위해 viewport size 벡터를 넘겨준다.
-		// 04 - x, y, z 방향 이동 벡터 파라미터 추가
-		// 04 - 픽셀 단위 사용을 위한 벡터에 깊이 추가
-		// 05 - x, y, z 축 회전각 파라미터 추가
-		// 06 - x, y, z 축 스케일 파라미터 추가
+
+		pN = parseInt(document.getElementById('polygonN').value),
+
 		draw(gl, createRegularPolygon(gl, pN),
 			[gl.drawingBufferWidth, gl.drawingBufferHeight, depth],
 			[tX, tY, tZ],
@@ -205,9 +171,6 @@ void main(void) {
 		);
 	},
 
-	/**
-	 * 01 - WebGL 컨텍스트 반환
-	 */
 	getWebGLContext = function(canvas) {
 		var gl, msg = "Your browser does not support WebGL, or it is not enabled by default.";
 		try {
@@ -224,10 +187,6 @@ void main(void) {
 		return gl;
 	},
 
-	/**
-	 * 01 - WebGL이 보여질 Viewport의 크기와 배경색 설정
-	 * 05 - viewportSize를 입력 받은 값으로 설정
-	 */
 	initViewport = function(gl, canvas) {
 		canvas.width = document.getElementById('viewportWidth').value,
 		canvas.height = document.getElementById('viewportHeight').value,
@@ -236,56 +195,33 @@ void main(void) {
 		gl.clear(gl.COLOR_BUFFER_BIT);
 	},
 
-	/**
-	 * playground - 정N각형 geometry 생성
-	 */
 	createRegularPolygon = function(gl, pN) {
 		var vertexBuffer = gl.createBuffer(),
-			indexBuffer = gl.createBuffer(), // 02 - 인덱스 버퍼 추가
-			aPoint, coreHeight = 100, i,
-			vertSize = 3,
-			_PI = Math.PI, _RAD = _PI/180, angle = 2*_PI/pN,
-			polygon,
-			c = Math.cos, s = Math.sin,
-			vert = [
-				 0.0,  coreHeight,  0.0
-			],
-			// 02 - vertices의 꼭지점 별 인덱스로 삼각형 구성
-			// 02 - 인덱스 배열 내의 원소를 세 개씩 잘라서 이루는 삼각형이 겹치지만 않으면 인덱스 번호 순서는 무관
-			indices = [];
-
-			for( i = 0 ; i < pN - 1 ; i = i/vertSize + 1 ) {
-				vert.push(
-					( vert[i*=3]*c(angle) + vert[++i]*(-1)*s(angle) ),
-					( vert[--i]*s(angle) + vert[++i]*c(angle) ),
-					( vert[--i+2] )
-				);
-			}
-			for ( i = 0 ; i < pN -2 ; i++ ) {
-				indices.push( 0, i+1, i+2 );
-			}
-			polygon = {
-				vertexBuffer : vertexBuffer,
-				indexBuffer : indexBuffer, // 02 - 인덱스 버퍼 추가
-				vertSize : vertSize,
-				nVerts : pN,
-				indexLength : indices.length // 02 - 인덱스 배열 길이 추가
-				// 02 - 인덱스 버퍼를 쓰면 drawElements()를 쓰므로 primtype 필요 없음
-				// 02 - primtype : gl.TRIANGLES
-			};
+			coreHeight = 100, i,
+			d = parseFloat(document.getElementById('objDepth').value),
+			polygon, vArr = [ 0.0, coreHeight, d ], vertCoords = 3,
+			c = Math.cos, s = Math.sin, mRound = Math.round,
+			_PI = Math.PI, _RADIAN = _PI/180, angle = 2*_PI/pN
+		;
+		for ( i = 0 ; i < pN - 1 ; i= i/vertCoords + 1 ) {
+		 	vArr.push(
+		 		vArr[i*=vertCoords]*c(angle) - vArr[++i]*s(angle),
+		 		vArr[--i]*s(angle) + vArr[++i]*c(angle),
+		 		vArr[--i+2]
+		 	);
+		}
+		polygon = {
+			vertexBuffer : vertexBuffer,
+			vertCoords : vertCoords,
+			nVerts : pN,
+			primtype : gl.TRIANGLE_FAN
+		},
 		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer),
-		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vert), gl.STATIC_DRAW);
-
-		// 02 - 인덱스 버퍼 설정
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer),
-		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vArr), gl.STATIC_DRAW);
 
 		return polygon;
 	},
 
-	/**
-	 * 01 - shader 소스가 정의된 <script> 태그 안의 내용을 기준으로 컴파일된 shader를 나타내는 JavaScript 반환
-	 */
 	getShader = function(gl, id) {
 		var shaderScript = document.getElementById(id),
 			shader;
@@ -305,29 +241,21 @@ void main(void) {
 		gl.shaderSource(shader, shaderScript.textContent);
 		gl.compileShader(shader);
 
-		// 01 - Shader 컴파일 성공 확인
 		if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
 			alert(gl.getShaderInfoLog(shader));
 			return null;
 		}
 
-		// 01 - 컴파일된 shader 반환
 		return shader;
 	},
 
-	/**
-	 * 01 - Vertex Shader 와 Fragment Shader 를 링크해서 Shader Program 구성, Shader Program을 나타내는 JavaScript 객체 반환
-	 */
 	getShaderProgram = function(gl, vShader, fShader) {
-		// 01 - Shader Program 객체 생성
 		var shaderProgram = gl.createProgram();
 
-		// 01 - Shader를 링크해서 Shader Program 구성
 		gl.attachShader(shaderProgram, vShader);
 		gl.attachShader(shaderProgram, fShader);
 		gl.linkProgram(shaderProgram);
 
-		// 01 - 링크 성공 확인, 실패 시 Shader 및 Shader Program 초기화
 		if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
 			alert("Could not initialise shaders");
 			gl.deleteProgram(shaderProgram);
@@ -339,76 +267,53 @@ void main(void) {
 		return shaderProgram;
 	},
 
-	/**
-	 * 01 - WebGL 컨텍스트와 그릴 도형 객체, Shader Program 객체를 전달해서 도형을 그린다.
-	 * 04 - x, y, z 방향 이동을 위한 translationArray 파라미터 추가
-	 * 05 - x, y, z 축 기준 회전을 위한 rotationArray 파라미터 추가
-	 * 06 - x, y, z 축 스케일을 위한 scaleArray 파라미터 추가
-	 */
-	draw = function(gl, objToDraw, viewportSizeArray,
+	draw = function(gl, objToDraw, viewportSizeArray, 
 					translationArray, rotationArray, scaleArray, shaderProgram) {
 
-		// 01 - 그릴 때 사용할 Shader Program 지정
+		
 		gl.useProgram(shaderProgram);
+		
+		shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition"),
+		gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute),
 
-		// 01 - Shader Program 내의 변수에 대한 포인터를 가져온다
-		// 01 - (실제 값은 shader에 선언되어 있는 attribute 변수의 선언 순서 index 값 반환)
-		// 01 - 두번째 파라미터는 Shader 소스 내에서 선언한 변수명과 같아야 함
-		shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-		// 01 - drawArrays() 나 drawElements() 같은 그리기 메서드가
-		// 01 - Shader Program 내의 index로 지정한 Vertex Attribute 변수에 접근할 수 있게 해준다.
-		gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+		gl.bindBuffer(gl.ARRAY_BUFFER, objToDraw.vertexBuffer),
+		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, objToDraw.vertCoords, gl.FLOAT, false, 0, 0),
 
-		// 01 - geometry 정보가 있는 Vertex Buffer를 구성하는 데 필요한 차원 수(vertSize)를 알려주고,
-		// 01 - 버퍼를 Shader Program에 밀어 넣는다.
-		gl.bindBuffer(gl.ARRAY_BUFFER, objToDraw.vertexBuffer);
-		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, objToDraw.vertSize, gl.FLOAT, false, 0, 0);
+		shaderProgram.viewportSizeUniform = gl.getUniformLocation(shaderProgram, "uViewportSizeInPixel"),
+		gl.uniform3fv(shaderProgram.viewportSizeUniform, viewportSizeArray),
 
-		// 03 - 픽셀 단위를 정규화 해 줄 viewport size 벡터를 Shader Program에 밀어 넣는다.
-		// 03 - 계산에 사용되는 행렬이나 벡터는 버퍼를 거치지 않는다.
-		shaderProgram.viewportSizeUniform = gl.getUniformLocation(shaderProgram, "uViewportSizeInPixel");
-		gl.uniform3fv(shaderProgram.viewportSizeUniform, viewportSizeArray);
+		shaderProgram.translationUniform = gl.getUniformLocation(shaderProgram, "uTranslation"),
+		gl.uniform3fv(shaderProgram.translationUniform, translationArray),
 
-		// 04 - x, y, z 방향 이동을 위한 벡터를 Shader Program에 밀어 넣는다.
-		// 04 - 계산에 사용되는 행렬이나 벡터는 버퍼를 거치지 않는다.
-		shaderProgram.translationUniform = gl.getUniformLocation(shaderProgram, "uTranslation");
-		gl.uniform3fv(shaderProgram.translationUniform, translationArray);
+		shaderProgram.rotationUniform = gl.getUniformLocation(shaderProgram, "uRotation"),
+		gl.uniform3fv(shaderProgram.rotationUniform, rotationArray),
 
-		// 05 - x, y, z 축 기준 회전을 위한 벡터를 Shader Program에 밀어 넣는다.
-		// 05 - 계산에 사용되는 행렬이나 벡터는 버퍼를 거치지 않는다.
-		shaderProgram.rotationUniform = gl.getUniformLocation(shaderProgram, "uRotation");
-		gl.uniform3fv(shaderProgram.rotationUniform, rotationArray);
-
-		// 06 - x, y, z 스케일을 위한 벡터를 Shader Program에 밀어 넣는다.
-		// 06 - 계산에 사용되는 행렬이나 벡터는 버퍼를 거치지 않는다.
 		shaderProgram.scaleUniform = gl.getUniformLocation(shaderProgram, "uScale");
 		gl.uniform3fv(shaderProgram.scaleUniform, scaleArray);
 
-		// 01 - Index Buffer가 있으면 Index Buffer를 이용해서 drawElements()로 그리고,
-		// 01 - Index Buffer가 없으면 Vertex의 개수를 알려주고 drawArrays()로 그린다.
-		if (objToDraw.indexBuffer)
-			gl.drawElements(gl.TRIANGLES, objToDraw.indexLength, gl.UNSIGNED_SHORT, 0);
-		else
-			gl.drawArrays(objToDraw.primtype, 0, objToDraw.nVerts);
+		gl.drawArrays(objToDraw.primtype, 0, objToDraw.nVerts);
 	};
 
-	drawWebGL(),
+	(function () {
+		var canvas = document.getElementById("webgl-canvas"),
+			canvasB = canvas.getBoundingClientRect(),
+			x, y, primtype = 0,
+			mousedown;
 
+		drawWebGL(canvas),
 
-	// 03- 슬라이더 이벤트 핸들러
-	Array.prototype.slice.call(document.querySelectorAll('.slider'))
-		.forEach( function( element ) {
-			element.addEventListener('input', function() {
-				drawWebGL();
-				element.nextSibling.innerText = element.value;
-			});
-		}),
+		Array.prototype.slice.call(document.querySelectorAll('.slider'))
+			.forEach( function( element ) {
+				element.addEventListener('input', function() {
+					drawWebGL(canvas),
+					element.nextSibling.innerHTML = element.value;
+				});
+			}),	
 
-	// 05 - Viewport Resize 핸들러
-	document.getElementById('btnRedraw').addEventListener('click', function() {
-		drawWebGL();
-	});
-
+		document.getElementById('btnRedraw').addEventListener('click', function() {
+			drawWebGL(canvas);
+		});
+	})();
 })();
 </script>
 </body>

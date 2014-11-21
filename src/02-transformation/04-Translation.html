@@ -310,7 +310,7 @@ void main(void) {
 		.forEach( function( element ) {
 			element.addEventListener('input', function() {
 				drawWebGL();
-				element.nextSibling.innerText = element.value;
+				element.nextSibling.innerHTML = element.value;
 			});
 		});
 

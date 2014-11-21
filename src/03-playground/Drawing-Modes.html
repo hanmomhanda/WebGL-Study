@@ -2,10 +2,10 @@
 <html lang='ko'>
 <head>
 <meta charset="UTF-8">
-<meta name="title" content="WebGL - Dragging a Polygon" />
-<meta name="subject" content="WebGL,Transformation,Dragging,Matrix,Vector" />
-<meta name="keywords" content="WebGL,Shader,Transformation,Dragging,Matrix,Vector" />
-<title>WebGL - Dragging a Polygon</title>
+<meta name="title" content="WebGL - Drawing Modes" />
+<meta name="subject" content="WebGL,Transformation,BeginMode,Matrix,Vector" />
+<meta name="keywords" content="WebGL,Shader,Transformation,BeginMode,Matrix,Vector" />
+<title>WebGL - Drawing Modes</title>
 </head>
 <body>
 <div id='propertyContainer'>	
@@ -23,7 +23,16 @@
 	<label for='scaleY'>세로 확대 : </label><input class='slider' id='scaleY' type='range' min='0.0' max='4.0' value='1' step='0.1'><span id='SY'>1</span>
 	<label for='scaleZ'>깊이 확대 : </label><input class='slider' id='scaleZ' type='range' min='0.0' max='4.0' value='1' step='0.1'><span id='SZ'>1</span>
 	<br/>
-	<label for='polygonN'>N각형 : </label><input class='slider' id='polygonN' type='range' min='3' max='16' value='8'><span id='polyN'>8</span>
+	<select id='begin-mode' class='select'>
+		<option value=0>gl.POINTS</option>
+		<option value=1>gl.LINES</option>
+		<option value=2>gl.LINE_LOOP</option>
+		<option value=3>gl.LINE_STRIP</option>
+		<option value=4>gl.TRIANGLES</option>
+		<option value=5>gl.TRIANGLE_STRIP</option>
+		<option value=6 selected>gl.TRIANGLE_FAN</option>
+	</select>
+	<label for='polygonN'>N각형 : </label><input class='slider' id='polygonN' type='range' min='2' max='16' value='8'><span id='polyN'>8</span>
 	<br/>	
 	<label for='viewportWidth'>Viewport 너비 : </label><input id='viewportWidth' type='text' placeholder='viewport 너비를 픽셀 단위로 입력' value='800'>
 	<label for='viewportHeight'>Viewport 높이 : </label><input id='viewportHeight' type='text' placeholder='viewport 높이를 픽셀 단위 입력' value='400'>
@@ -162,9 +171,10 @@ void main(void) {
 		sY = parseFloat(document.getElementById('scaleY').value),
 		sZ = parseFloat(document.getElementById('scaleZ').value),
 
+		beginMode = parseInt(document.getElementById('begin-mode').value),
 		pN = parseInt(document.getElementById('polygonN').value),
 
-		draw(gl, createRegularPolygon(gl, pN),
+		draw(gl, createRegularPolygon(gl, pN, parseInt(beginMode)),
 			[gl.drawingBufferWidth, gl.drawingBufferHeight, depth],
 			[tX, tY, tZ],
 			[rX, rY, rZ],
@@ -197,7 +207,7 @@ void main(void) {
 		gl.clear(gl.COLOR_BUFFER_BIT);
 	},
 
-	createRegularPolygon = function(gl, pN) {
+	createRegularPolygon = function(gl, pN, primtype) {
 		var vertexBuffer = gl.createBuffer(),
 			coreHeight = 100, i,
 			d = parseFloat(document.getElementById('objDepth').value),
@@ -216,7 +226,7 @@ void main(void) {
 			vertexBuffer : vertexBuffer,
 			vertCoords : vertCoords,
 			nVerts : pN,
-			primtype : gl.TRIANGLE_FAN
+			primtype : primtype
 		},
 		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer),
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vArr), gl.STATIC_DRAW);
@@ -307,10 +317,18 @@ void main(void) {
 		Array.prototype.slice.call(document.querySelectorAll('.slider'))
 			.forEach( function( element ) {
 				element.addEventListener('input', function() {
-					drawWebGL(canvas, x, y, 0),
+					drawWebGL(canvas),
 					element.nextSibling.innerHTML = element.value;
 				});
 			}),	
+
+		Array.prototype.slice.call(document.querySelectorAll('.select'))
+			.forEach( function( element ) {
+				element.addEventListener('change', function() {
+					primtype = element.value,
+					drawWebGL(canvas, x, y, 0);
+				});
+			}),
 
 		canvas.addEventListener('mousedown', function(e) {
 			mousedown = true;
