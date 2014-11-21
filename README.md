@@ -21,6 +21,14 @@
 
 ><a href='http://hanmomhanda.github.io/WebGL-Study/src/02-transformation/05-Rotation.html' target='_blank'>05. 회전 변환</a>
 
+><a href='http://hanmomhanda.github.io/WebGL-Study/src/02-transformation/06-Scale.html' target='_blank'>06. 스케일 변환</a>
+
+
+### Playground
+
+><a href='src/03-playground/Drawing-a-Regular-Polygon.html' target='_blank'>정N각형 그리기</a>
+><a href='src/03-playground/Dragging-a-Polygon.html' target='_blank'>정N각형 마우스 드래깅</a>
+
 
 
 ----------
@@ -97,7 +105,7 @@
 
 ## 상식과 조금 다른 것들 - 행렬, 벡터 구성
 
-### 열(columt) 우선!!
+### 열(column) 우선!!
 
 행렬이나 벡터의 연산은 고딩/대딩 때 배운 것과 당연하게도 똑같다.
 

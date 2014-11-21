@@ -247,8 +247,8 @@ void main(void) {
 			_PI = Math.PI, _RAD = _PI/180, angle = 2*_PI/pN,
 			polygon,
 			c = Math.cos, s = Math.sin,
-			vert = [ 
-				 0.0,  coreHeight,  0.0				
+			vert = [
+				 0.0,  coreHeight,  0.0
 			],
 			// 02 - vertices의 꼭지점 별 인덱스로 삼각형 구성
 			// 02 - 인덱스 배열 내의 원소를 세 개씩 잘라서 이루는 삼각형이 겹치지만 않으면 인덱스 번호 순서는 무관
@@ -258,8 +258,8 @@ void main(void) {
 				vert.push(
 					( vert[i*=3]*c(angle) + vert[++i]*(-1)*s(angle) ),
 					( vert[--i]*s(angle) + vert[++i]*c(angle) ),
-					( vert[--i+2] )	
-				);				
+					( vert[--i+2] )
+				);
 			}
 			for ( i = 0 ; i < pN -2 ; i++ ) {
 				indices.push( 0, i+1, i+2 );
@@ -345,7 +345,7 @@ void main(void) {
 	 * 05 - x, y, z 축 기준 회전을 위한 rotationArray 파라미터 추가
 	 * 06 - x, y, z 축 스케일을 위한 scaleArray 파라미터 추가
 	 */
-	draw = function(gl, objToDraw, viewportSizeArray, 
+	draw = function(gl, objToDraw, viewportSizeArray,
 					translationArray, rotationArray, scaleArray, shaderProgram) {
 
 		// 01 - 그릴 때 사용할 Shader Program 지정
@@ -403,7 +403,7 @@ void main(void) {
 				element.nextSibling.innerText = element.value;
 			});
 		}),
-	
+
 	// 05 - Viewport Resize 핸들러
 	document.getElementById('btnRedraw').addEventListener('click', function() {
 		drawWebGL();
