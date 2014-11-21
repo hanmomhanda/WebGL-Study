@@ -26,9 +26,9 @@
 
 ### Playground
 
-><a href='src/03-playground/Drawing-a-Regular-Polygon.html' target='_blank'>정N각형 그리기</a>
+><a href='http://hanmomhanda.github.io/WebGL-Study/src/03-playground/Drawing-a-Regular-Polygon.html' target='_blank'>정N각형 그리기</a>
 
-><a href='src/03-playground/Dragging-a-Polygon.html' target='_blank'>정N각형 마우스 드래깅</a>
+><a href='http://hanmomhanda.github.io/WebGL-Study/src/03-playground/Dragging-a-Polygon.html' target='_blank'>정N각형 마우스 드래깅</a>
 
 
 
