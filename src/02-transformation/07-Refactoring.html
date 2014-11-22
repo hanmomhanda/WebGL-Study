@@ -205,7 +205,7 @@ void main(void) {
 			],
 			rectangle = {
 				vertexBuffer : vertexBuffer,
-				vertSize : 3,
+				vertComponents : 3,
 				nVerts : 4,
 				primtype : gl.TRIANGLE_FAN				
 			};
@@ -270,7 +270,7 @@ void main(void) {
 		gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute),
 
 		gl.bindBuffer(gl.ARRAY_BUFFER, objToDraw.vertexBuffer),
-		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, objToDraw.vertCoords, gl.FLOAT, false, 0, 0),
+		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, objToDraw.vertComponents, gl.FLOAT, false, 0, 0),
 
 		shaderProgram.viewportSizeUniform = gl.getUniformLocation(shaderProgram, "uViewportSizeInPixel"),
 		gl.uniform3fv(shaderProgram.viewportSizeUniform, viewportSizeArray),
@@ -294,10 +294,18 @@ void main(void) {
 
 		Array.prototype.slice.call(document.querySelectorAll('.slider'))
 			.forEach( function( element ) {
-				element.addEventListener('input', function() {
+				var sliderHandler = function(element) {
 					drawWebGL(canvas),
 					element.nextSibling.innerHTML = element.value;
+				};
+				element.addEventListener('input', function() {
+					sliderHandler(element);
 				});
+				if ( "ActiveXObject" in window ) {
+					element.addEventListener('change', function() {
+						sliderHandler(element);
+					});
+				}
 			}),	
 
 		document.getElementById('btnRedraw').addEventListener('click', function() {
