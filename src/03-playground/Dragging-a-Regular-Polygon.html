@@ -299,17 +299,25 @@ void main(void) {
 	(function () {
 		var canvas = document.getElementById("webgl-canvas"),
 			canvasB = canvas.getBoundingClientRect(),
-			x, y, primtype = 0,
+			x, y,
 			mousedown;
 
 		drawWebGL(canvas),
 
 		Array.prototype.slice.call(document.querySelectorAll('.slider'))
 			.forEach( function( element ) {
-				element.addEventListener('input', function() {
-					drawWebGL(canvas, x, y, 0),
+				var sliderHandler = function(element) {
+					drawWebGL(canvas),
 					element.nextSibling.innerHTML = element.value;
+				};
+				element.addEventListener('input', function() {
+					sliderHandler(element);
 				});
+				if ( "ActiveXObject" in window ) {
+					element.addEventListener('change', function() {
+						sliderHandler(element);
+					});
+				}
 			}),	
 
 		canvas.addEventListener('mousedown', function(e) {

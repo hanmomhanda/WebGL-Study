@@ -309,23 +309,30 @@ void main(void) {
 	(function () {
 		var canvas = document.getElementById("webgl-canvas"),
 			canvasB = canvas.getBoundingClientRect(),
-			x, y, primtype = 0,
+			x, y,
 			mousedown;
 
 		drawWebGL(canvas),
 
 		Array.prototype.slice.call(document.querySelectorAll('.slider'))
-			.forEach( function( element ) {
-				element.addEventListener('input', function() {
+			.forEach( function(element) {
+				var sliderHandler = function(element) {
 					drawWebGL(canvas),
 					element.nextSibling.innerHTML = element.value;
+				};
+				element.addEventListener('input', function() {
+					sliderHandler(element);
 				});
+				if ( "ActiveXObject" in window ) {
+					element.addEventListener('change', function() {
+						sliderHandler(element);
+					});
+				}
 			}),	
 
 		Array.prototype.slice.call(document.querySelectorAll('.select'))
 			.forEach( function( element ) {
 				element.addEventListener('change', function() {
-					primtype = element.value,
 					drawWebGL(canvas, x, y, 0);
 				});
 			}),
