@@ -367,6 +367,7 @@ M1*M2*M3*V1 == (M1*M2)*M3*V1 == M1*(M2*M3)*V1 == M1*M2*(M3*V1)
 ## 그리기 모드
 
 ><img src='http://antongerdelan.net/webgl/images/draw_modes.png' alt='WebGL 그리기 모드'>
+
 >출처 : http://antongerdelan.net/webgl/vertexbuffers.html
 
 
