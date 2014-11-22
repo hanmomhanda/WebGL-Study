@@ -307,7 +307,7 @@ void main(void) {
 		Array.prototype.slice.call(document.querySelectorAll('.slider'))
 			.forEach( function( element ) {
 				var sliderHandler = function(element) {
-					drawWebGL(canvas),
+					drawWebGL(canvas, x, y, 0),
 					element.nextSibling.innerHTML = element.value;
 				};
 				element.addEventListener('input', function() {
