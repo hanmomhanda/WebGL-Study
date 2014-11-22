@@ -43,8 +43,10 @@
 ## 큰 흐름
 
 - canvas에서 WebGL context를 얻어와서(보통 gl이라는 변수에 저장)
-- WebGL context내의 여러 상수, 변수, 함수를 써서 그릴 정보를 shaderProgram에 담고
+- WebGL context내의 여러 상수, 변수, 함수를 써서 그릴 정보를 WebGL API를 통해 shaderProgram에 담고
 - drawArrays()나 drawElements()로 shaderProgram을 GPU에 보내면 GPU가 shaderProgram을 실행하면서 렌더링
+
+![WebGL Flow](images/WebGL-Flow.png)
 
 ## 정보 전달 흐름
 
@@ -283,16 +285,16 @@ M1*M2*M3*V1 == (M1*M2)*M3*V1 == M1*(M2*M3)*V1 == M1*M2*(M3*V1)
 
     >https://www.khronos.org/opengles/sdk/docs/man/xhtml/glGetUniformLocation.xml
     >
-    >위 링크의 내용과 달라 webGL에서는 integer가 아닌 WebGLUniformLocation 라는 객체 반환
+    >위 링크의 내용과 달리 webGL에서는 integer가 아닌 WebGLUniformLocation 라는 객체 반환
     >반환된 index 값은 나중에 uniformMatrix4fv()의 첫번째 인자로 사용
 
 - vertexAttribPointer(attribute변수index, vertSize, 변수타입, boolean, stride, offset)
 
     >https://www.khronos.org/opengles/sdk/docs/man/xhtml/glVertexAttribPointer.xml
 
-    - vertSize는 3차원 좌표계를 사용하면 3이다.
+    - vertSize는 2차원 좌표계를 사용하면 2, 3차원 좌표계를 사용하면 3이다.
     - 변수 타입은 vertexBuffer안에 있는 배열 원소의 데이터 타입(gl.FLOAT 등)
-    - boolean은 고정소수점 데이터의 정규화 여부. 부호 있는 숫자는 [-1, 1] 사이 값으로 부호 없는 숫자는 [0, 1] 사이 값으로 정규화
+    - boolean은 넘겨지는 데이터가 자동으로 정규화 되어야 하는 지 여부. 고정소수점 데이터의 정규화 여부. 부호 있는 숫자는 [-1, 1] 사이 값으로 부호 없는 숫자는 [0, 1] 사이 값으로 정규화
     - stride는 연속된 generic vertex attribute 사이의 byte offset
     - offset는 배열에 있는 첫번째 generic vertex attribute의 첫번째 컴포넌트에 대한 인덱스 값
 
