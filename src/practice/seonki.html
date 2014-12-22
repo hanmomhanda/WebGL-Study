@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <canvas id="glCanvas" width="500" height="500"></canvas>
+    <script>
+    var gl, keys = 'webgl,experimental-webgl,webkit-3d,moz-webgl'.split(','), i = keys.length
+    var cvs = document.getElementById('glCanvas')
+    while (i--) if (gl = cvs.getContext(keys[i])) break
+    if (gl) console.log('webgl 초기화 성공!')
+    else console.log('webgl 초기화 실패!')
+    function setBuffer(){
+        // Vertex Buffer
+        var rectData = [
+            -0.5, -0.5, 0.0,
+            0.5, -0.5, 0.0,
+            -0.5, 0.5, 0.0,
+            0.5, 0.5, 0.0
+        ]
+        var buffer = gl.createBuffer()
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(rectData), gl.STATIC_DRAW)
+        buffer.itemSize = 3
+        buffer.numItem = 4
+        return buffer
+    }
+    function setProgram(){
+        var vertexShader = gl.createShader(gl.VERTEX_SHADER)
+        var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)
+        var program = gl.createProgram()
+        // Vertex Shader & Fragment Shader
+        gl.shaderSource(vertexShader, vertexShaderStr)
+        gl.compileShader(vertexShader)
+        gl.shaderSource(fragmentShader, fragmentShaderStr)
+        gl.compileShader(fragmentShader)
+        //Program
+        gl.attachShader(program, vertexShader)
+        gl.attachShader(program, fragmentShader)
+        gl.linkProgram(program)
+        program.aVertexPosition = gl.getAttribLocation(program, "aVertexPosition");
+        program.uRotation = gl.getUniformLocation(program, 'uRotation')
+        program.uColor = gl.getUniformLocation(program, 'uColor')
+        program.uPixelMatrix = gl.getUniformLocation(program, "uPixelMatrix")
+        program.uScale = gl.getUniformLocation(program, "uScale")
+        program.uPosition = gl.getUniformLocation(program, "uPosition")
+        console.log(program)
+        return program
+    }
+    var rectBuffer = setBuffer()
+    var vertexShaderStr = "" +
+            "attribute vec3 aVertexPosition;" +
+                // 006강 uPixelMatrix 선언 Start
+            "uniform mat4 uPixelMatrix;" +
+            "uniform vec3 uScale;" +
+            "uniform vec3 uRotation;" +
+            "uniform vec3 uPosition;" +
+            "uniform vec3 uColor;" +
+            "varying vec3 vColor;" +
+            'mat4 scaleMTX(vec3 t)' +
+            '{' +
+            '   return mat4( t[0],0,0,0, 0,t[1],0,0, 0,0,t[2],0, 0,0,0,1);' +
+            '}' +
+            'mat4 positionMTX(vec3 t)' +
+            '{' +
+            '   return mat4( 1,0,0,0, 0,1,0,0, 0,0,1,0, t[0],t[1],t[2],1);' +
+            '}' +
+            'mat4 rotationMTX(vec3 t)' +
+            '{' +
+            '   float s = sin(t[0]);float c = cos(t[0]);' +
+            '   mat4 m1 = mat4( 1,0,0,0, 0,c,-s,0, 0,s,c,0, 0,0,0,1);s = sin(t[1]);c = cos(t[1]);' +
+            '   mat4 m2 = mat4(c,0,s,0, 0,1,0,0, -s,0,c,0, 0,0,0,1);s = sin(t[2]);c = cos(t[2]);' +
+            '   mat4 m3 = mat4(c,-s,0,0, s,c,0,0, 0,0,1,0, 0,0,0,1);' +
+            '   return m3*m2*m1;' +
+            '}' +
+            "void main(void) {" +
+            " gl_Position =uPixelMatrix*positionMTX(uPosition)*rotationMTX(uRotation)* scaleMTX(uScale)*vec4(aVertexPosition, 1.0);" +
+            " vColor = uColor;" +
+            "}"
+    var fragmentShaderStr = "" +
+            "precision mediump float;" +
+            "varying vec3 vColor;" +
+            "void main(void) {" +
+            " gl_FragColor = vec4(vColor, 1.0);" +
+            "}"
+    var firstProgram = setProgram(vertexShaderStr, fragmentShaderStr)
+    var viewportWidth, viewportHright
+    if (cvs)  viewportWidth = cvs.width = '500', viewportHeight = cvs.height = '500'
+    gl.viewport(0, 0, parseInt(cvs.width), +parseInt(cvs.height));
+    var pixelMatrix = [
+        2 / viewportWidth, 0, 0, 0,
+        0, 2 / viewportHeight, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 1
+    ]
+    console.log(pixelMatrix)
+    var rotations = []
+    var scales = []
+    var positions = []
+    var max = 1500
+    var i
+    for(i=0; i< max; i++){
+        var scale = Math.random()*100
+        scales.push([scale , scale ,1]) //가로 세로 크기가 scale인 배열을 scales에 max 객수 만큼 push합니다.
+        positions.push([Math.random()*500-250, Math.random()*500-250,0] )//-250~250 사이의 값을 가진 x,y를 랜덤 설정합니다.
+         rotations.push([0,0,0])
+      //  로테이션도 360도 사이의 값을 랜덤으로 입력합니다.
+    }
+
+    function render(){
+        gl.clearColor(0, 0, 0, 1.0)
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+        gl.useProgram(firstProgram)
+        gl.bindBuffer(gl.ARRAY_BUFFER, rectBuffer);
+        gl.enableVertexAttribArray(firstProgram.aVertexPosition);
+        for(i=0; i<max; i++){
+
+            rotations[i][2]+=0.1
+            gl.vertexAttribPointer(firstProgram.aVertexPosition, rectBuffer.itemSize, gl.FLOAT, false, 0, 0);
+            gl.uniformMatrix4fv(firstProgram.uPixelMatrix, false, pixelMatrix)
+            gl.uniform3fv(firstProgram.uRotation, rotations[i])
+            gl.uniform3fv(firstProgram.uScale, scales[i])
+            gl.uniform3fv(firstProgram.uPosition, positions[i])
+            gl.uniform3fv(firstProgram.uColor, [Math.random(), Math.random(), Math.random()])            
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, rectBuffer.numItem);
+        }
+
+    }
+    setInterval(render, 16);
+    </script>
+</body>
+</html

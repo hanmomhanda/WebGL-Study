@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang='ko'>
+<head>
+    <meta charset="UTF-8">
+    <title>Canvas2D - Shifting Rectangles</title>
+</head>
+<body>
+<input type='text' id='numOfShapes' size='26' placeholder='숫자 입력 후 Tab을 누르세요' style='font-size: 25pt'>
+<span id='fps' style='font-size: 25pt'></span>
+<canvas id="myCanvas" width="1200" height="700" style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.</canvas>
+<script>
+(function() {
+    var canvas = document.getElementById('myCanvas'),
+        ctx = canvas.getContext("2d"),
+        numOfShape = document.getElementById('numOfShapes'),
+        w = canvas.width,
+        h = canvas.height,
+        r = 15,
+        color = '#008800',
+        shapes = [],
+        intervalId = 0,
+        lastTime,
+
+        drawRect = function(x, y, color) {
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.strokeRect(x, y, r, r);
+            ctx.closePath();
+        },
+
+        draw = function() {
+            var l = shapes.length,
+                thisTime = new Date;
+            ctx.clearRect(0, 0, w, h);
+            while(l--) {
+                // (shapes[l].x > -r)?(shapes[l].x -= 1):(shapes[l].x = w),
+                // drawRect(shapes[l].x, shapes[l].y);
+                drawRect(--shapes[l].x, shapes[l].y, shapes[l].color);
+            }
+            document.getElementById('fps').innerHTML = Math.round(1000/(thisTime - lastTime)) + 'fps';
+            lastTime = thisTime;
+        },
+
+        init = function(n) {
+            var x, y, color, n = numOfShape.value;
+            ctx.clearRect(0, 0, w, h);
+            shapes.length = 0;
+            clearInterval(intervalId);
+            lastTime = new Date;
+            while(n--) {
+                x = Math.random() * w,
+                y = Math.random() * h,
+                // color = '#'+('00000'+(Math.random()*(1<<24)|0).toString(16)).slice(-6),
+                color = '#007700',
+                drawRect(x, y, color),
+                shapes.push({x: x, y: y, color: color});
+            }
+        };
+    numOfShape.focus();
+    numOfShape.addEventListener('blur', function() {
+        init(numOfShape.value);
+        intervalId = setInterval( function() { draw(); }, 16);
+    });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang='ko'>
+<head>
+<meta charset="UTF-8">
+<title>WebGL - Shifting Triangles</title>
+</head>
+<body>
+<input type='text' id='numOfShapes' placeholder='Enter number'>
+<span id='fps'></span>
+<canvas id="myCanvas" width="1200" height="400" style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.</canvas>
+<script id="shader-vs" type="x-shader/x-vertex">
+attribute vec3 aVertexPosition;
+
+uniform vec3 uViewportSizeInPixel;
+
+mat4 pixelUnitEnablerMatrix(vec3 vp) {
+	return mat4(
+		2.0/vp[0], 0, 0, 0,
+		0, 2.0/vp[1], 0, 0,
+		0, 0, 2.0/vp[2], 0,
+		0, 0, 0, 1
+	);
+}
+
+uniform vec3 uTranslation;
+
+mat4 translationMatrix(vec3 t) {
+	return mat4(
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		t[0], t[1], t[2], 1
+	);
+}
+
+void main(void) {
+	gl_Position = pixelUnitEnablerMatrix(uViewportSizeInPixel)
+					*translationMatrix(uTranslation)					
+					*vec4(aVertexPosition, 1.0);
+}
+</script>
+<script id="shader-fs" type="x-shader/x-fragment">
+void main(void) {
+	gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+}
+</script>
+<script>
+;(function() {
+    var canvas = document.getElementById('myCanvas'),
+        gl = canvas.getContext('webgl');
+        numOfShape = document.getElementById('numOfShapes'),
+        w = canvas.width,
+        h = canvas.height,
+        r = 15,
+        color = '#ff0000',
+        shapes = [],
+        intervalId = 0,
+        lastTime = 0,
+
+		shaderProgram = null,
+		shapeObj = null,
+
+		getShader = function(gl, id) {
+			var shaderScript = document.getElementById(id),
+				shader;
+
+			if (!shaderScript) {
+				return null;
+			}
+
+			if (shaderScript.type == "x-shader/x-fragment") {
+				shader = gl.createShader(gl.FRAGMENT_SHADER);
+			} else if (shaderScript.type == "x-shader/x-vertex") {
+				shader = gl.createShader(gl.VERTEX_SHADER);
+			} else {
+				return null;
+			}
+
+			gl.shaderSource(shader, shaderScript.textContent);
+			gl.compileShader(shader);
+
+			if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+				alert(gl.getShaderInfoLog(shader));
+				return null;
+			}
+
+			return shader;
+		},
+
+		getShaderProgram = function(gl, vShader, fShader) {
+			var shaderProgram = gl.createProgram();
+
+			gl.attachShader(shaderProgram, vShader);
+			gl.attachShader(shaderProgram, fShader);
+			gl.linkProgram(shaderProgram);
+
+			if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+				alert("Could not initialise shaders");
+				gl.deleteProgram(shaderProgram);
+				gl.deleteProgram(vertexShader);
+				gl.deleteProgram(fragmentShader);
+				return null;
+			}
+
+			return shaderProgram;
+		},
+
+		getTriangle = function(length) {
+			var vertexBuffer = gl.createBuffer(),
+				vertices = [
+					0, length, 0,
+					-length, -length, 0,
+					length, -length, 0
+				],
+				triangle = {
+					vertexBuffer : vertexBuffer,
+					vertCoords : 3,
+					nVerts : 3,
+					primtype : gl.LINE_LOOP
+				};
+			gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer),
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+			return triangle;
+		},
+
+		drawTri = function(x, y) {
+			shaderProgram.translationUniform = gl.getUniformLocation(shaderProgram, "uTranslation"),
+			gl.uniform3fv(shaderProgram.translationUniform, [x, y, 0]),
+			gl.drawArrays(shapeObj.primtype, 0, shapeObj.nVerts);
+		},
+
+		draw = function() {
+            var l = shapes.length,
+                thisTime = new Date;            
+   //          gl.viewport(0, 0, w, h),
+			// gl.clearColor(1.0, 1.0, 1.0, 1.0),
+			// gl.clear(gl.COLOR_BUFFER_BIT);
+            while(l--) {
+                (shapes[l].x > (-w/2 - r))?(shapes[l].x -= 1):(shapes[l].x = w/2),
+                drawTri(shapes[l].x, shapes[l].y);                
+                // drawTri(--shapes[l].x, shapes[l].y);
+            }
+            document.getElementById('fps').innerHTML = Math.round(1000/(thisTime - lastTime)) + 'fps';
+            lastTime = thisTime;
+        },
+
+		init = function(n) {
+			var x, y, n = numOfShape.value;			
+			
+			shapeObj = getTriangle(r);
+
+			gl.viewport(0, 0, w, h);
+			gl.clearColor(1.0, 1.0, 1.0, 1.0);
+			gl.clear(gl.COLOR_BUFFER_BIT);
+			
+			shaderProgram = getShaderProgram(gl, getShader(gl, "shader-vs"), getShader(gl, "shader-fs"));
+			gl.useProgram(shaderProgram);
+
+			shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition"),
+			gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute),
+
+			gl.bindBuffer(gl.ARRAY_BUFFER, shapeObj.vertexBuffer),
+			gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, shapeObj.vertCoords, gl.FLOAT, false, 0, 0),
+
+			shaderProgram.viewportSizeUniform = gl.getUniformLocation(shaderProgram, "uViewportSizeInPixel"),
+			gl.uniform3fv(shaderProgram.viewportSizeUniform, [gl.drawingBufferWidth, gl.drawingBufferHeight, 0]),
+
+			clearInterval(intervalId);			
+			shapes.length = 0;
+			lastTime = new Date;
+			while(n--) {
+                x = Math.random() * w - w/2,
+                y = Math.random() * h - h/2,
+                drawTri(x, y),
+                shapes.push({x: x, y: y});
+            }	
+		},
+
+	numOfShape.focus();
+    numOfShape.addEventListener('blur', function() {
+        init(numOfShape.value);
+        intervalId = setInterval( function() { draw(); }, 16);
+    }); 
+
+})();
+</script>
+</body>
+</html>
