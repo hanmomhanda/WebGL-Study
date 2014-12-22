@@ -33,6 +33,12 @@
 
 ><a href='http://hanmomhanda.github.io/WebGL-Study/src/03-playground/Drawing-Modes.html' target='_blank'>그리기 모드(Begin Mode)</a>
 
+><a href='http://hanmomhanda.github.io/WebGL-Study/src/03-playground/canvas2D-Rect.html' target='_blank'>Canvas2D</a>
+
+><a href='http://hanmomhanda.github.io/WebGL-Study/src/03-playground/Shifting-Multiple-Triangles-Wrong.html' target='_blank'>잘못 구현한 WebGL</a>
+
+><a href='http://hanmomhanda.github.io/WebGL-Study/src/03-playground/Shifting-Multiple-Triangles-Opt.html' target='_blank'>WebGL</a>
+
 
 
 ----------

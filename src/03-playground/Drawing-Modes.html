@@ -184,9 +184,13 @@ void main(void) {
 	},
 
 	getWebGLContext = function(canvas) {
-		var gl, msg = "Your browser does not support WebGL, or it is not enabled by default.";
+		var gl, ctxList = ['moz-webgl', 'webkit-3d', 'experimental-webgl', 'webgl'], l = ctxList.length,
+			msg = "Your browser does not support WebGL, or it is not enabled by default.";
 		try {
-			gl = canvas.getContext("experimental-webgl");
+			while(l--) {
+				if (gl = canvas.getContext(ctxList[l]))
+					break;
+			}
 		} catch (e) {
 			msg = "Error creating WebGL Context!: " + e.toString();
 		}
