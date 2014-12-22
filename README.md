@@ -115,6 +115,16 @@
 
     >실제 그래픽 카드의 메모리에 저장
 
+## 상식과 조금 다른 것들 - 좌표계
+
+### 일반적인 Web : 왼쪽 위가 원점, 오른쪽이 X축, 아래쪽이 Y축
+
+![](http://i.imgur.com/rW8sm4h.png)
+
+### WebGL : 화면 가운데가 원점, 오른쪽이 X축, 위쪽이 Y축, Z축은 오른손 법칙에 따른다.
+
+![](http://i.imgur.com/T7xgKkb.png)
+
 ## 상식과 조금 다른 것들 - 행렬, 벡터 구성
 
 ### 열(column) 우선!!
@@ -372,9 +382,9 @@ M1*M2*M3*V1 == (M1*M2)*M3*V1 == M1*(M2*M3)*V1 == M1*M2*(M3*V1)
 
 ## 그리기 모드
 
-><img src='http://antongerdelan.net/webgl/images/draw_modes.png' alt='WebGL 그리기 모드'>
+><img src='http://ptgmedia.pearsoncmg.com/images/chap3_9780321902924/elementLinks/03fig13_alt.jpg' alt='WebGL 그리기 모드'>
 
->출처 : http://antongerdelan.net/webgl/vertexbuffers.html
+>출처 : http://www.informit.com/articles/article.aspx?p=2111395&seqNum=2
 
 
 ## 주요 상수
