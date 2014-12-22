@@ -61,11 +61,6 @@
   <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
   <!-- DISCUS -->
 </footer>
-<script id="shader-fs" type="x-shader/x-fragment">
-void main(void) {
-	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-}
-</script>
 <script id="shader-vs" type="x-shader/x-vertex">
 attribute vec3 aVertexPosition;
 
@@ -143,6 +138,11 @@ void main(void) {
 					*vec4(aVertexPosition, 1.0);
 }
 </script>
+<script id="shader-fs" type="x-shader/x-fragment">
+void main(void) {
+	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+}
+</script>
 <script>
 ;(function() {
 	var drawWebGL = function(canvas, x, y, z) {
@@ -207,33 +207,6 @@ void main(void) {
 		gl.clear(gl.COLOR_BUFFER_BIT);
 	},
 
-	createRegularPolygon = function(gl, pN, primtype) {
-		var vertexBuffer = gl.createBuffer(),
-			coreHeight = 100, i,
-			d = parseFloat(document.getElementById('objDepth').value),
-			polygon, vArr = [ 0.0, coreHeight, d ], vertCoords = 3,
-			c = Math.cos, s = Math.sin, mRound = Math.round,
-			_PI = Math.PI, _RADIAN = _PI/180, angle = 2*_PI/pN
-		;
-		for ( i = 0 ; i < pN - 1 ; i= i/vertCoords + 1 ) {
-		 	vArr.push(
-		 		vArr[i*=vertCoords]*c(angle) - vArr[++i]*s(angle),
-		 		vArr[--i]*s(angle) + vArr[++i]*c(angle),
-		 		vArr[--i+2]
-		 	);
-		}
-		polygon = {
-			vertexBuffer : vertexBuffer,
-			vertCoords : vertCoords,
-			nVerts : pN,
-			primtype : primtype
-		},
-		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer),
-		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vArr), gl.STATIC_DRAW);
-
-		return polygon;
-	},
-
 	getShader = function(gl, id) {
 		var shaderScript = document.getElementById(id),
 			shader;
@@ -277,6 +250,33 @@ void main(void) {
 		}
 
 		return shaderProgram;
+	},
+
+	createRegularPolygon = function(gl, pN, primtype) {
+		var vertexBuffer = gl.createBuffer(),
+			coreHeight = 100, i,
+			d = parseFloat(document.getElementById('objDepth').value),
+			polygon, vArr = [ 0.0, coreHeight, d ], vertCoords = 3,
+			c = Math.cos, s = Math.sin, mRound = Math.round,
+			_PI = Math.PI, _RADIAN = _PI/180, angle = 2*_PI/pN
+		;
+		for ( i = 0 ; i < pN - 1 ; i= i/vertCoords + 1 ) {
+		 	vArr.push(
+		 		vArr[i*=vertCoords]*c(angle) - vArr[++i]*s(angle),
+		 		vArr[--i]*s(angle) + vArr[++i]*c(angle),
+		 		vArr[--i+2]
+		 	);
+		}
+		polygon = {
+			vertexBuffer : vertexBuffer,
+			vertCoords : vertCoords,
+			nVerts : pN,
+			primtype : primtype
+		},
+		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer),
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vArr), gl.STATIC_DRAW);
+
+		return polygon;
 	},
 
 	draw = function(gl, objToDraw, viewportSizeArray, 

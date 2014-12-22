@@ -50,11 +50,6 @@
   <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
   <!-- DISCUS -->
 </footer>
-<script id="shader-fs" type="x-shader/x-fragment">
-void main(void) {
-	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-}
-</script>
 <script id="shader-vs" type="x-shader/x-vertex">
 attribute vec3 aVertexPosition;
 
@@ -132,6 +127,11 @@ void main(void) {
 					*vec4(aVertexPosition, 1.0);
 }
 </script>
+<script id="shader-fs" type="x-shader/x-fragment">
+void main(void) {
+	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+}
+</script>
 <script>
 ;(function() {
 	var drawWebGL = function(canvas) {
@@ -169,9 +169,13 @@ void main(void) {
 	},
 
 	getWebGLContext = function(canvas) {
-		var gl, msg = "Your browser does not support WebGL, or it is not enabled by default.";
+		var gl, ctxList = ['moz-webgl', 'webkit-3d', 'experimental-webgl', 'webgl'], l = ctxList.length,
+		    msg = "Your browser does not support WebGL, or it is not enabled by default.";
 		try {
-			gl = canvas.getContext("experimental-webgl");
+			while(l--) {
+				if (gl = canvas.getContext(ctxList[l]))
+					break;
+			}
 		} catch (e) {
 			msg = "Error creating WebGL Context!: " + e.toString();
 		}
@@ -190,29 +194,6 @@ void main(void) {
 		gl.viewport(0, 0, canvas.width, canvas.height),
 		gl.clearColor(0.3, 0.3, 0.3, 1.0),
 		gl.clear(gl.COLOR_BUFFER_BIT);
-	},
-
-	createRectangle = function(gl) {
-		var vertexBuffer = gl.createBuffer(),
-			w = parseFloat(document.getElementById('objWidth').value),
-			h = parseFloat(document.getElementById('objHeight').value),
-			d = parseFloat(document.getElementById('objDepth').value),
-			vertices = [
-				 w/2.0,  h/2.0,  d/2.0,
-				-w/2.0,  h/2.0,  d/2.0,
-				-w/2.0, -h/2.0,  d/2.0,
-				 w/2.0, -h/2.0,  d/2.0
-			],
-			rectangle = {
-				vertexBuffer : vertexBuffer,
-				vertComponents : 3,
-				nVerts : 4,
-				primtype : gl.TRIANGLE_FAN				
-			};
-		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer),
-		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-
-		return rectangle;
 	},
 
 	getShader = function(gl, id) {
@@ -258,6 +239,29 @@ void main(void) {
 		}
 
 		return shaderProgram;
+	},
+
+	createRectangle = function(gl) {
+		var vertexBuffer = gl.createBuffer(),
+			w = parseFloat(document.getElementById('objWidth').value),
+			h = parseFloat(document.getElementById('objHeight').value),
+			d = parseFloat(document.getElementById('objDepth').value),
+			vertices = [
+				 w/2.0,  h/2.0,  d/2.0,
+				-w/2.0,  h/2.0,  d/2.0,
+				-w/2.0, -h/2.0,  d/2.0,
+				 w/2.0, -h/2.0,  d/2.0
+			],
+			rectangle = {
+				vertexBuffer : vertexBuffer,
+				vertComponents : 3,
+				nVerts : 4,
+				primtype : gl.TRIANGLE_FAN				
+			};
+		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer),
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+		return rectangle;
 	},
 
 	draw = function(gl, objToDraw, viewportSizeArray, 

@@ -56,12 +56,6 @@
   <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
   <!-- DISCUS -->
 </footer>
-<script id="shader-fs" type="x-shader/x-fragment">
-void main(void) {
-	// 01 - r, g, b, a 색상 벡터
-	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-}
-</script>
 <script id="shader-vs" type="x-shader/x-vertex">
 // 01 - 직사각형 geometry를 구성하는 vertex buffer
 attribute vec3 aVertexPosition;
@@ -155,6 +149,12 @@ void main(void) {
 					*vec4(aVertexPosition, 1.0);
 }
 </script>
+<script id="shader-fs" type="x-shader/x-fragment">
+void main(void) {
+	// 01 - r, g, b, a 색상 벡터
+	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+}
+</script>
 <script>
 ;(function() {
 	/**
@@ -235,48 +235,6 @@ void main(void) {
 	},
 
 	/**
-	 * 01 - 그릴 도형 버퍼 생성 및 버퍼를 포함하는 JavaScript 객체 반환
-	 * 03 - 픽셀 단위 입력 값으로 버텍스 설정
-	 */
-	createRectangle = function(gl) {
-		var vertexBuffer = gl.createBuffer(),
-			indexBuffer = gl.createBuffer(), // 02 - 인덱스 버퍼 추가
-			w = parseFloat(document.getElementById('objWidth').value), // 03 - 픽셀 단위로 입력 받은 값
-			h = parseFloat(document.getElementById('objHeight').value), // 03 - 픽셀 단위로 입력 받은 값
-			d = parseFloat(document.getElementById('objDepth').value), // 03 - 픽셀 단위로 입력 받은 값
-			vertices = [ // 03 - 입력받은 픽셀 단위로 변경, 원점 중심이므로 좌우상하로 1/2씩
-				 w/2.0,  h/2.0,  d/2.0,
-				-w/2.0,  h/2.0,  d/2.0,
-				-w/2.0, -h/2.0,  d/2.0,
-				 w/2.0, -h/2.0,  d/2.0
-			],
-			// 02 - vertices의 꼭지점 별 인덱스로 삼각형 구성
-			// 02 - 인덱스 배열 내의 원소를 세 개씩 잘라서 이루는 삼각형이 겹치지만 않으면 인덱스 번호 순서는 무관
-			indices = [
-				0, 1, 2, // 0, 1, 2 이 되든 0, 2, 1 이 되든 2, 1, 0 이 되든 무관
-				3, 2, 0  // 0, 2, 3 이 되든 2, 3, 0 이 되든 3, 0, 2 이 되든 무관
-			],
-			rectangle = {
-				vertexBuffer : vertexBuffer,
-				indexBuffer : indexBuffer, // 02 - 인덱스 버퍼 추가
-				vertSize : 3,
-				nVerts : 4,
-				primtype : gl.TRIANGLES,
-				indexLength : indices.length // 02 - 인덱스 배열 길이 추가
-				// 02 - 인덱스 버퍼를 쓰면 drawElements()를 쓰므로 primtype 필요 없음
-				// 02 - primtype : gl.TRIANGLES
-			};
-		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer),
-		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-
-		// 02 - 인덱스 버퍼 설정
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer),
-		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
-
-		return rectangle;
-	},
-
-	/**
 	 * 01 - shader 소스가 정의된 <script> 태그 안의 내용을 기준으로 컴파일된 shader를 나타내는 JavaScript 반환
 	 */
 	getShader = function(gl, id) {
@@ -330,6 +288,48 @@ void main(void) {
 		}
 
 		return shaderProgram;
+	},
+
+	/**
+	 * 01 - 그릴 도형 버퍼 생성 및 버퍼를 포함하는 JavaScript 객체 반환
+	 * 03 - 픽셀 단위 입력 값으로 버텍스 설정
+	 */
+	createRectangle = function(gl) {
+		var vertexBuffer = gl.createBuffer(),
+			indexBuffer = gl.createBuffer(), // 02 - 인덱스 버퍼 추가
+			w = parseFloat(document.getElementById('objWidth').value), // 03 - 픽셀 단위로 입력 받은 값
+			h = parseFloat(document.getElementById('objHeight').value), // 03 - 픽셀 단위로 입력 받은 값
+			d = parseFloat(document.getElementById('objDepth').value), // 03 - 픽셀 단위로 입력 받은 값
+			vertices = [ // 03 - 입력받은 픽셀 단위로 변경, 원점 중심이므로 좌우상하로 1/2씩
+				 w/2.0,  h/2.0,  d/2.0,
+				-w/2.0,  h/2.0,  d/2.0,
+				-w/2.0, -h/2.0,  d/2.0,
+				 w/2.0, -h/2.0,  d/2.0
+			],
+			// 02 - vertices의 꼭지점 별 인덱스로 삼각형 구성
+			// 02 - 인덱스 배열 내의 원소를 세 개씩 잘라서 이루는 삼각형이 겹치지만 않으면 인덱스 번호 순서는 무관
+			indices = [
+				0, 1, 2, // 0, 1, 2 이 되든 0, 2, 1 이 되든 2, 1, 0 이 되든 무관
+				3, 2, 0  // 0, 2, 3 이 되든 2, 3, 0 이 되든 3, 0, 2 이 되든 무관
+			],
+			rectangle = {
+				vertexBuffer : vertexBuffer,
+				indexBuffer : indexBuffer, // 02 - 인덱스 버퍼 추가
+				vertSize : 3,
+				nVerts : 4,
+				primtype : gl.TRIANGLES,
+				indexLength : indices.length // 02 - 인덱스 배열 길이 추가
+				// 02 - 인덱스 버퍼를 쓰면 drawElements()를 쓰므로 primtype 필요 없음
+				// 02 - primtype : gl.TRIANGLES
+			};
+		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer),
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+		// 02 - 인덱스 버퍼 설정
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer),
+		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+
+		return rectangle;
 	},
 
 	/**

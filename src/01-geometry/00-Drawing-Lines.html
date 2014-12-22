@@ -28,12 +28,6 @@
   <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
   <!-- DISCUS -->
 </footer>
-<script id="shader-fs" type="x-shader/x-fragment">
-void main(void) {
-	// r, g, b, a 색상 벡터
-	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-}
-</script>
 <script id="shader-vs" type="x-shader/x-vertex">
 // 직사각형 geometry를 구성하는 vertex buffer
 attribute vec3 aVertexPosition;
@@ -41,6 +35,12 @@ attribute vec3 aVertexPosition;
 void main(void) {
 	// 각 vertex의 위치 계산
 	gl_Position = vec4(aVertexPosition, 1.0);
+}
+</script>
+<script id="shader-fs" type="x-shader/x-fragment">
+void main(void) {
+	// r, g, b, a 색상 벡터
+	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 }
 </script>
 <script>
@@ -88,37 +88,6 @@ void main(void) {
 		gl.viewport(0, 0, canvas.width, canvas.height);
 		gl.clearColor(0.3, 0.3, 0.3, 1.0),
 		gl.clear(gl.COLOR_BUFFER_BIT);
-	},
-
-	/**
-	 * 그릴 도형 버퍼 생성 및 버퍼를 포함하는 JavaScript 객체 반환
-	 */
-	createTriangle = function(gl) {
-		var vertexBuffer = gl.createBuffer(),
-			// indexBuffer = gl.createBuffer(),
-			vertices = [
-				   0,  0.2,  0.0,
-				-0.2, -0.2,  0.0,
-				 0.2, -0.2,  0.0,
-			],
-			// indices = [
-			// 	0, 1, 2
-			// ],
-			triangle = {
-				vertexBuffer : vertexBuffer,
-				// indexBuffer : indexBuffer,
-				vertSize : 3,
-				nVerts : 3,
-				// indexLength : indices.length,
-				primtype : gl.LINE_LOOP
-			};
-		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer),
-		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-
-		// gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer),
-		// gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
-
-		return triangle;
 	},
 
 	/**
@@ -177,6 +146,37 @@ void main(void) {
 		}
 
 		return shaderProgram;
+	},
+
+	/**
+	 * 그릴 도형 버퍼 생성 및 버퍼를 포함하는 JavaScript 객체 반환
+	 */
+	createTriangle = function(gl) {
+		var vertexBuffer = gl.createBuffer(),
+			// indexBuffer = gl.createBuffer(),
+			vertices = [
+				   0,  0.2,  0.0,
+				-0.2, -0.2,  0.0,
+				 0.2, -0.2,  0.0,
+			],
+			// indices = [
+			// 	0, 1, 2
+			// ],
+			triangle = {
+				vertexBuffer : vertexBuffer,
+				// indexBuffer : indexBuffer,
+				vertSize : 3,
+				nVerts : 3,
+				// indexLength : indices.length,
+				primtype : gl.LINE_LOOP
+			};
+		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer),
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+		// gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer),
+		// gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+
+		return triangle;
 	},
 
 	/**
