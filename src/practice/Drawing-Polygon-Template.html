@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang='ko'>
+<head>
+<meta charset="UTF-8">
+<meta name="title" content="WebGL - Drawing Modes" />
+<meta name="subject" content="WebGL,Transformation,BeginMode,Matrix,Vector" />
+<meta name="keywords" content="WebGL,Shader,Transformation,BeginMode,Matrix,Vector" />
+<title>WebGL - Drawing Regular Polygon</title>
+</head>
+<body>
+<div id='propertyContainer'>
+	<label for='polygonN'>N각형 : </label><input class='slider' id='polygonN' type='range' min='2' max='16' value='3'><span id='polyN'>3</span>
+	<br/>
+	<select id='begin-mode' class='select'>
+		<option value=0>gl.POINTS</option>
+		<option value=1>gl.LINES</option>
+		<option value=2>gl.LINE_LOOP</option>
+		<option value=3>gl.LINE_STRIP</option>
+		<option value=4>gl.TRIANGLES</option>
+		<option value=5>gl.TRIANGLE_STRIP</option>
+		<option value=6 selected>gl.TRIANGLE_FAN</option>
+	</select>
+</div>
+<br/>
+<canvas id="webgl-canvas" style="border: none;" width="800" height="400"></canvas>
+<hr/>
+<script id="shader-vs" type="x-shader/x-vertex">
+attribute vec3 aVertexPosition;
+
+uniform vec3 uViewportSizeInPixel;
+
+mat4 pixelUnitEnablerMatrix(vec3 vp) {
+	return mat4(
+		2.0/vp[0], 0, 0, 0,
+		0, 2.0/vp[1], 0, 0,
+		0, 0, 2.0/vp[2], 0,
+		0, 0, 0, 1
+	);
+}
+
+void main(void) {
+	gl_Position = pixelUnitEnablerMatrix(uViewportSizeInPixel)
+					*vec4(aVertexPosition, 1.0);
+}
+</script>
+<script id="shader-fs" type="x-shader/x-fragment">
+void main(void) {
+	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+}
+</script>
+<script>
+;(function() {
+	/**
+	 * WebGL 실행 기본 구조
+	 *
+	 *   <canvas>에서 WebGL 컨텍스트를 가자와서
+	 *   Viewport를 설정하고,
+	 *   ShaderProgram을 구성하고,
+	 *   그린다.
+	 */
+	var drawWebGL = function(canvas) {
+		var canvas, gl, shaderProgram,
+			beginMode, pN
+		;
+		gl = getWebGLContext(canvas),
+		initViewport(gl, canvas),
+		shaderProgram = getShaderProgram(gl, getShader(gl, "shader-vs"), getShader(gl, "shader-fs")),
+
+		beginMode = parseInt(document.getElementById('begin-mode').value),
+		pN = parseInt(document.getElementById('polygonN').value),
+
+		draw(gl, createRegularPolygon(gl, pN, beginMode),
+			[gl.drawingBufferWidth, gl.drawingBufferHeight, 0],
+			shaderProgram
+		);
+	},
+
+	/**
+	 * WebGL 컨텍스트 반환
+	 */
+	getWebGLContext = function(canvas) {
+		var gl, ctxList = ['moz-webgl', 'webkit-3d', 'experimental-webgl', 'webgl'], l = ctxList.length,
+			msg = "Your browser does not support WebGL, or it is not enabled by default.";
+		try {
+			while(l--) {
+				if (gl = canvas.getContext(ctxList[l]))
+					break;
+			}
+		} catch (e) {
+			msg = "Error creating WebGL Context!: " + e.toString();
+		}
+
+		if (!gl) {
+			alert(msg);
+			throw new Error(msg);
+		}
+
+		return gl;
+	},
+
+	/**
+	 * WebGL이 보여질 Viewport의 크기와 배경색 설정
+	 */
+	initViewport = function(gl, canvas) {
+		canvas.width = 1000,
+		canvas.height = 400,
+		gl.viewport(0, 0, canvas.width, canvas.height),
+		gl.clearColor(0.3, 0.3, 0.3, 1.0),
+		gl.clear(gl.COLOR_BUFFER_BIT);
+	},
+
+	/**
+	 * shader 소스가 정의된 <script> 태그 안의 내용을 기준으로
+	 * 컴파일된 shader를 나타내는 JavaScript 반환
+	 */
+	getShader = function(gl, id) {
+		var shaderScript = document.getElementById(id),
+			shader;
+
+		if (!shaderScript) {
+			return null;
+		}
+
+		if (shaderScript.type == "x-shader/x-fragment") {
+			shader = gl.createShader(gl.FRAGMENT_SHADER);
+		} else if (shaderScript.type == "x-shader/x-vertex") {
+			shader = gl.createShader(gl.VERTEX_SHADER);
+		} else {
+			return null;
+		}
+
+		gl.shaderSource(shader, shaderScript.textContent);
+		gl.compileShader(shader);
+
+		if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+			alert(gl.getShaderInfoLog(shader));
+			return null;
+		}
+
+		return shader;
+	},
+
+	/**
+	 * Vertex Shader 와 Fragment Shader 를 링크해서 Shader Program 구성
+	 * Shader Program을 나타내는 JavaScript 객체 반환
+	 */
+	getShaderProgram = function(gl, vShader, fShader) {
+		var shaderProgram = gl.createProgram();
+
+		gl.attachShader(shaderProgram, vShader);
+		gl.attachShader(shaderProgram, fShader);
+		gl.linkProgram(shaderProgram);
+
+		if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+			alert("Could not initialise shaders");
+			gl.deleteProgram(shaderProgram);
+			gl.deleteProgram(vertexShader);
+			gl.deleteProgram(fragmentShader);
+			return null;
+		}
+
+		return shaderProgram;
+	},
+
+	/**
+	 * 그릴 도형 버퍼 생성 및 버퍼를 포함하는 JavaScript 객체 반환
+	 */
+	createRegularPolygon = function(gl, pN, primtype) {
+		var vertexBuffer = gl.createBuffer(),
+			polygon, vArr = [];
+
+		// TODO : 다각형 정점 좌표를 가진 vArr을 구성하고,
+		// TODO : 아래의 polygon 객체를 구성하시오.
+		// polygon = {
+		// 	vertexBuffer : vertexBuffer,
+		// 	vertCoords : ,
+		// 	nVerts : ,
+		// 	primtype : 6
+		// },
+		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer),
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vArr), gl.STATIC_DRAW);
+
+		return polygon;
+	},
+
+	/**
+	 * WebGL 컨텍스트와 그릴 도형 객체, Shader Program 객체를 전달해서 도형을 그린다.
+	 */
+	draw = function(gl, objToDraw, viewportSizeArray, shaderProgram) {
+
+		// 사용할 Shader Program 지정
+		gl.useProgram(shaderProgram);
+
+		// Shader Program 에서 vertexBuffer 를 전달 받을 aVertexPosition이라는 변수의 위치(pointer) 받아옴
+		shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition"),
+		// Shader Program 내 변수 활성화
+		gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute),
+
+		// gl에 vertexBuffer 바인딩
+		gl.bindBuffer(gl.ARRAY_BUFFER, objToDraw.vertexBuffer),
+		// Shader Program 내 변수에 vertexBuffer에 대한 정보 전달
+		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, objToDraw.vertCoords, gl.FLOAT, false, 0, 0),
+
+		// Shader Program 내에 픽셀 단위를 사용할 수 있게 해주는 상수 uViewportSizeInPixel가 들어갈 위치 받아옴
+		shaderProgram.viewportSizeUniform = gl.getUniformLocation(shaderProgram, "uViewportSizeInPixel"),
+		// Shader Program 내에 상수 배열 전달
+		gl.uniform3fv(shaderProgram.viewportSizeUniform, viewportSizeArray),
+
+		// 그리는 방법, 정점 수를 알려주고 최종으로 그려라!!
+		gl.drawArrays(objToDraw.primtype, 0, objToDraw.nVerts);
+	};
+
+	(function () {
+		var canvas = document.getElementById("webgl-canvas");
+
+		drawWebGL(canvas),
+
+		Array.prototype.slice.call(document.querySelectorAll('.slider'))
+			.forEach( function(element) {
+				var sliderHandler = function(element) {
+					drawWebGL(canvas),
+					element.nextSibling.innerHTML = element.value;
+				};
+				element.addEventListener('input', function() {
+					sliderHandler(element);
+				});
+				if ( "ActiveXObject" in window ) {
+					element.addEventListener('change', function() {
+						sliderHandler(element);
+					});
+				}
+			}),
+
+		Array.prototype.slice.call(document.querySelectorAll('.select'))
+			.forEach( function( element ) {
+				element.addEventListener('change', function() {
+					drawWebGL(canvas);
+				});
+			});
+	})();
+})();
+</script>
+</body>
+</html>
