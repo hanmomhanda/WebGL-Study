@@ -58,8 +58,8 @@
 
 - gl.bindBuffer(), gl.bufferData()로 그릴 정보(geometry, 색상, texture, ...)를 버퍼를 통해 WebGL context에 저장
 - gl.bindBuffer(), gl.vertexAttribPointer()로 WebGL context에 저장된 그릴 정보를 shaderProgram 내에 선언된 변수에 저장
-- 변형(이동, 회전, 스케일)에 필요한 벡터/행렬은 버퍼를 통하지 않고, uniform#fv()/uniformMatrix#fv()로 Shader에 보내고, 변형을 위한 계산을 Shader에서 수행하게 할 수 있고,
-    - gl-matrix 라이브러리를 이용해서 JavaScript 내에서 변형을 계산하고, 계산한 결과를 Shader에 보내줄 수도 있으나, Shader에서 변형 계산을 하는 것이 성능 향상 효과가 훨씬 뛰어남
+- 변환(이동, 회전, 스케일)에 필요한 벡터/행렬은 버퍼를 통하지 않고, uniform#fv()/uniformMatrix#fv()로 Shader에 보내고, 변환을 위한 계산을 Shader에서 수행하게 할 수 있고,
+    - gl-matrix 라이브러리를 이용해서 JavaScript 내에서 변환을 계산하고, 계산한 결과를 Shader에 보내줄 수도 있으나, Shader에서 변환 계산을 하는 것이 성능 향상 효과가 훨씬 뛰어남
 - gl.compileShader(), gl.attachShader(), gl.linkProgram()으로 Shader를 컴파일 및 링크해서 shaderProgram에 저장
 - gl.drawArrays()나 gl.drawElements()로 shaderProgram을 GPU에 보내면 GPU가 shaderProgram을 실행하면서 각 Shader내에 있는 계산을 수행하고 렌더링
 
