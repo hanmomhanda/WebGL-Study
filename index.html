@@ -77,7 +77,8 @@
 
         <hr/>
         <div>
-          <div id='url'></div>
+          <div id='pathname'></div>
+          <div id='hash'></div>
         </div>
 
       </section>
@@ -88,9 +89,12 @@
     </div>
     <!--[if !IE]><script>fixScale(document);</script><![endif]-->
     <script>
-    var url = document.location.pathname;
-    var dUrl = document.getElementById('url');
-    dUrl.innerHTML = url;
+    var urlPathname = document.location.pathname;
+    var dPathname = document.getElementById('pathname');
+    dUrl.innerHTML = urlPathname;
+    var urlHash = document.location.hash;
+    var dHash = document.getElementById('hash');
+    dHash.innerHTML = urlHash;
     </script>
   </body>
 </html>
