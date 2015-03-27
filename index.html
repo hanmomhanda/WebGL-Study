@@ -75,6 +75,11 @@
         <li>Color</li>
         <li>Texture</li>
 
+        <hr/>
+        <div>
+          <div id='url'></div>
+        </div>
+
       </section>
       <footer>
         <p>Project maintained by <a href="https://github.com/hanmomhanda">hanmomhanda</a></p>
@@ -82,6 +87,10 @@
       </footer>
     </div>
     <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-
+    <script>
+    var url = document.location.pathname;
+    var dUrl = document.getElementById('url');
+    dUrl.innerHTML = url;
+    </script>
   </body>
 </html>
