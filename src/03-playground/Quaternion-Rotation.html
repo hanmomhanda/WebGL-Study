@@ -2,28 +2,33 @@
 <html lang='ko'>
 <head>
 <meta charset="UTF-8">
-<meta name="title" content="WebGL - Dragging a Polygon" />
+<meta name="title" content="WebGL - Quaternion - Three.js" />
 <meta name="subject" content="WebGL,Transformation,Dragging,Matrix,Vector" />
 <meta name="keywords" content="WebGL,Shader,Transformation,Dragging,Matrix,Vector" />
-<title>WebGL - 4원수 회전</title>
+<title>WebGL - 4원수 회전 - Three.js</title>
+<style>
+.transValue {
+    width: 50px;
+}
+</style>
 </head>
 <body>
 <div id='propertyContainer'>
 	<label for='objDepth'>깊이 : </label><input class='slider' id='objDepth' type='range' min='0' max='200' value='0'><span id='pxDepth'>0</span>
 	<br/>
-	<label for='translateX'>X축 이동 : </label><input class='slider' id='translateX' type='range' min='-400' max='400' value='0'><span id='pxTX'>0</span>
-	<label for='translateY'>Y축 이동 : </label><input class='slider' id='translateY' type='range' min='-200' max='200' value='0'><span id='pxTY'>0</span>
-	<label for='translateZ'>Z축 이동 : </label><input class='slider' id='translateZ' type='range' min='-100' max='100' value='0'><span id='pxTZ'>0</span>
+	<label for='translateX'>X축 이동 : </label><input class='slider' id='translateX' type='range' min='-400' max='400' value='0'><input type='text' class='transValue' maxlength='5' value='0' id='TX' data-slider-id='translateX'/>
+	<label for='translateY'>Y축 이동 : </label><input class='slider' id='translateY' type='range' min='-200' max='200' value='0'><input type='text' class='transValue' maxlength='5' value='0' id='TY' data-slider-id='translateY'/>
+	<label for='translateZ'>Z축 이동 : </label><input class='slider' id='translateZ' type='range' min='-100' max='100' value='0'><input type='text' class='transValue' maxlength='5' value='0' id='TZ' data-slider-id='translateZ'/>
 	<br/>
-	<label for='rotateX'>X축 회전각 : </label><input class='slider' id='rotateX' type='range' min='-360' max='360' value='0'><span id='pxRX'>0</span>
-	<label for='rotateY'>Y축 회전각 : </label><input class='slider' id='rotateY' type='range' min='-360' max='360' value='0'><span id='pxRY'>0</span>
-	<label for='rotateZ'>Z축 회전각 : </label><input class='slider' id='rotateZ' type='range' min='-360' max='360' value='0'><span id='pxRZ'>0</span>
+	<label for='rotateX'>X축 회전각 : </label><input class='slider' id='rotateX' type='range' min='-360' max='360' value='0'><input type='text' class='transValue' maxlength='5' value='0' id='RX' data-slider-id='rotateX'/>
+	<label for='rotateY'>Y축 회전각 : </label><input class='slider' id='rotateY' type='range' min='-360' max='360' value='0'><input type='text' class='transValue' maxlength='5' value='0' id='RY' data-slider-id='rotateY'/>
+	<label for='rotateZ'>Z축 회전각 : </label><input class='slider' id='rotateZ' type='range' min='-360' max='360' value='0'><input type='text' class='transValue' maxlength='5' value='0' id='RZ' data-slider-id='rotateZ'/>
 	<br/>
-	<label for='scaleX'>가로 확대 : </label><input class='slider' id='scaleX' type='range' min='0.0' max='4.0' value='1' step='0.1'><span id='SX'>1</span>
-	<label for='scaleY'>세로 확대 : </label><input class='slider' id='scaleY' type='range' min='0.0' max='4.0' value='1' step='0.1'><span id='SY'>1</span>
-	<label for='scaleZ'>깊이 확대 : </label><input class='slider' id='scaleZ' type='range' min='0.0' max='4.0' value='1' step='0.1'><span id='SZ'>1</span>
+	<label for='scaleX'>가로 확대 : </label><input class='slider' id='scaleX' type='range' min='0.0' max='4.0' value='1' step='0.1'><input type='text' class='transValue' maxlength='5' value='1' id='SX' data-slider-id='scaleX'/>
+	<label for='scaleY'>세로 확대 : </label><input class='slider' id='scaleY' type='range' min='0.0' max='4.0' value='1' step='0.1'><input type='text' class='transValue' maxlength='5' value='1' id='SY' data-slider-id='scaleY'/>
+	<label for='scaleZ'>깊이 확대 : </label><input class='slider' id='scaleZ' type='range' min='0.0' max='4.0' value='1' step='0.1'><input type='text' class='transValue' maxlength='5' value='1' id='SZ' data-slider-id='scaleZ'/>
 	<br/>
-	<label for='polygonN'>N각형 : </label><input class='slider' id='polygonN' type='range' min='3' max='16' value='8'><span id='polyN'>8</span>
+	<label for='polygonN'>N각형 : </label><input class='slider' id='polygonN' type='range' min='3' max='16' value='8'><input type='text' class='transValue' maxlength='5' value='8' id='polyN' data-slider-id='polygonN'/>
 	<br/>
 	<label for='viewportWidth'>Viewport 너비 : </label><input id='viewportWidth' type='text' placeholder='viewport 너비를 픽셀 단위로 입력' value='800'>
 	<label for='viewportHeight'>Viewport 높이 : </label><input id='viewportHeight' type='text' placeholder='viewport 높이를 픽셀 단위 입력' value='400'>
@@ -454,7 +459,8 @@ void main(void) {
 			.forEach( function( element ) {
 				var sliderHandler = function(element) {
 					drawWebGL(canvas, x, y, 0),
-					element.nextSibling.innerHTML = element.value;
+					// element.nextSibling.innerHTML = element.value;
+                    element.nextSibling.value = element.value;
 				};
 				element.addEventListener('input', function() {
 					sliderHandler(element);
@@ -465,6 +471,15 @@ void main(void) {
 					});
 				}
 			}),
+
+        Array.prototype.slice.call(document.querySelectorAll('.transValue'))
+            .forEach( function( element ) {
+                element.addEventListener('change', function() {
+                    var sliderId = element.getAttribute('data-slider-id');
+                    document.getElementById(sliderId).value = element.value;
+                    drawWebGL(canvas, x, y, 0);
+                });
+            }),
 
 		canvas.addEventListener('mousedown', function(e) {
 			mousedown = true;
