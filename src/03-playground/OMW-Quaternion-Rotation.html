@@ -5,7 +5,7 @@
 <meta name="title" content="WebGL - Dragging a Polygon" />
 <meta name="subject" content="WebGL,Transformation,Dragging,Matrix,Vector" />
 <meta name="keywords" content="WebGL,Shader,Transformation,Dragging,Matrix,Vector" />
-<title>WebGL - Dragging a Polygon</title>
+<title>WebGL - 오일러 회전</title>
 </head>
 <body>
 <div id='propertyContainer'>
@@ -29,7 +29,7 @@
 	<label for='viewportHeight'>Viewport 높이 : </label><input id='viewportHeight' type='text' placeholder='viewport 높이를 픽셀 단위 입력' value='400'>
 	<button id='btnRedraw'>다시 그리기</button>
 	<br/><br/>
-	<div>Canvas 위에서 마우스를 드래그 해보세요.</div>
+	<div>오일러 회전</div>
 </div>
 <br/>
 <canvas id="webgl-canvas" style="border: none;" width="800" height="400"></canvas>
@@ -111,110 +111,23 @@ mat4 rotationMatrix(vec3 r) {
 
 	// return m3 * m2 * m1;
 
-        float cos0= cos(r[0]*0.5);
-        float cos1= cos(r[1]*0.5);
-        float cos2= cos(r[2]*0.5);
-        float sin0= sin(r[0]*0.5);
-        float sin1= sin(r[1]*0.5);
-        float sin2= sin(r[2]*0.5);
-        float w = cos2 * cos1 * cos0 + sin2 * sin1 * sin0;
-        float x = cos2 * cos1 * sin0 - sin2 * sin1 * cos0;
-        float y = cos2 * sin1 * cos0 + sin2 * cos1 * sin0;
-        float z = sin2 * cos1 * cos0 - cos2 * sin1 * sin0;
-        mat4 quaternionMTX = mat4(
-            pow(w, 2.0) + pow(x, 2.0) - pow(y, 2.0) - pow(z, 2.0), 2.0*(x*y + w*z), 2.0*(x*z - w*y), 0,
-            2.0*(x*y - w*z), pow(w, 2.0) - pow(x, 2.0) + pow(y, 2.0) - pow(z, 2.0), 2.0*(y*z + w*x), 0,
-            2.0*(x*z + w*y), 2.0*(y*z - w*x), pow(w, 2.0) - pow(x, 2.0) - pow(y, 2.0) + pow(z, 2.0), 0,
-            0, 0, 0, 1
-        );
-        return quaternionMTX;
-}
-
-vec4 getQuaternion(vec3 euler) {
-
-    float c0 = cos( euler[0] * 0.5 );
-    float c1 = cos( euler[1] * 0.5 );
-    float c2 = cos( euler[2] * 0.5 );
-    float s0 = sin( euler[0] * 0.5 );
-    float s1 = sin( euler[1] * 0.5 );
-    float s2 = sin( euler[2] * 0.5 );
-
-    // ZYX 기준
-    float x = s0 * c1 * c2 - c0 * s1 * s2;
-    float y = c0 * s1 * c2 + s0 * c1 * s2;
-    float z = c0 * c1 * s2 - s0 * s1 * c2;
-    float w = c0 * c1 * c2 + s0 * s1 * s2;
-
-    return vec4(x, y, z, w);
-
-
-    // if ( euler.order === 'XYZ' ) {
-
-    //     this._x = s1 * c2 * c3 + c1 * s2 * s3;
-    //     this._y = c1 * s2 * c3 - s1 * c2 * s3;
-    //     this._z = c1 * c2 * s3 + s1 * s2 * c3;
-    //     this._w = c1 * c2 * c3 - s1 * s2 * s3;
-
-    // } else if ( euler.order === 'YXZ' ) {
-
-    //     this._x = s1 * c2 * c3 + c1 * s2 * s3;
-    //     this._y = c1 * s2 * c3 - s1 * c2 * s3;
-    //     this._z = c1 * c2 * s3 - s1 * s2 * c3;
-    //     this._w = c1 * c2 * c3 + s1 * s2 * s3;
-
-    // } else if ( euler.order === 'ZXY' ) {
-
-    //     this._x = s1 * c2 * c3 - c1 * s2 * s3;
-    //     this._y = c1 * s2 * c3 + s1 * c2 * s3;
-    //     this._z = c1 * c2 * s3 + s1 * s2 * c3;
-    //     this._w = c1 * c2 * c3 - s1 * s2 * s3;
-
-    // } else if ( euler.order === 'ZYX' ) {
-
-    //     this._x = s1 * c2 * c3 - c1 * s2 * s3;
-    //     this._y = c1 * s2 * c3 + s1 * c2 * s3;
-    //     this._z = c1 * c2 * s3 - s1 * s2 * c3;
-    //     this._w = c1 * c2 * c3 + s1 * s2 * s3;
-
-    // } else if ( euler.order === 'YZX' ) {
-
-    //     this._x = s1 * c2 * c3 + c1 * s2 * s3;
-    //     this._y = c1 * s2 * c3 + s1 * c2 * s3;
-    //     this._z = c1 * c2 * s3 - s1 * s2 * c3;
-    //     this._w = c1 * c2 * c3 - s1 * s2 * s3;
-
-    // } else if ( euler.order === 'XZY' ) {
-
-    //     this._x = s1 * c2 * c3 - c1 * s2 * s3;
-    //     this._y = c1 * s2 * c3 - s1 * c2 * s3;
-    //     this._z = c1 * c2 * s3 + s1 * s2 * c3;
-    //     this._w = c1 * c2 * c3 + s1 * s2 * s3;
-
-    // }
-}
-
-vec4 applyQuaternion(vec4 quat, vec4 vertex) {
-    float x = vertex[0];
-    float y = vertex[1];
-    float z = vertex[2];
-
-    float qx = quat[0];
-    float qy = quat[1];
-    float qz = quat[2];
-    float qw = quat[2];
-
-    // calculate quat * vector
-    float ix =  qw * x + qy * z - qz * y;
-    float iy =  qw * y + qz * x - qx * z;
-    float iz =  qw * z + qx * y - qy * x;
-    float iw = - qx * x - qy * y - qz * z;
-
-    // calculate result * inverse quat
-    float rx = ix * qw + iw * - qx + iy * - qz - iz * - qy;
-    float ry = iy * qw + iw * - qy + iz * - qx - ix * - qz;
-    float rz = iz * qw + iw * - qz + ix * - qy - iy * - qx;
-
-    return vec4(rx, ry, rz, 1.0);
+    float cos0= cos(r[0]*0.5);
+    float cos1= cos(r[1]*0.5);
+    float cos2= cos(r[2]*0.5);
+    float sin0= sin(r[0]*0.5);
+    float sin1= sin(r[1]*0.5);
+    float sin2= sin(r[2]*0.5);
+    float w = cos2 * cos1 * cos0 + sin2 * sin1 * sin0;
+    float x = cos2 * cos1 * sin0 - sin2 * sin1 * cos0;
+    float y = cos2 * sin1 * cos0 + sin2 * cos1 * sin0;
+    float z = sin2 * cos1 * cos0 - cos2 * sin1 * sin0;
+    mat4 quaternionMTX = mat4(
+        pow(w, 2.0) + pow(x, 2.0) - pow(y, 2.0) - pow(z, 2.0), 2.0*(x*y + w*z), 2.0*(x*z - w*y), 0,
+        2.0*(x*y - w*z), pow(w, 2.0) - pow(x, 2.0) + pow(y, 2.0) - pow(z, 2.0), 2.0*(y*z + w*x), 0,
+        2.0*(x*z + w*y), 2.0*(y*z - w*x), pow(w, 2.0) - pow(x, 2.0) - pow(y, 2.0) + pow(z, 2.0), 0,
+        0, 0, 0, 1
+    );
+    return quaternionMTX;
 }
 
 uniform vec3 uScale;
@@ -231,19 +144,11 @@ mat4 scaleMatrix(vec3 s) {
 varying highp vec4 vColor;
 
 void main(void) {
-	// gl_Position = pixelUnitEnablerMatrix(uViewportSizeInPixel)
-	// 				*translationMatrix(uTranslation)
-	// 				*rotationMatrix(uRotation)
-	// 				*scaleMatrix(uScale)
-	// 				*vec4(aVertexPosition, 1.0);
-
-    vec4 scaled = scaleMatrix(uScale) * vec4(aVertexPosition, 1.0);
-    vec4 quat = getQuaternion(uRotation);
-    vec4 qRotated = applyQuaternion(quat, scaled);
-
-    gl_Position = pixelUnitEnablerMatrix(uViewportSizeInPixel)
-                    *translationMatrix(uTranslation)
-                    *qRotated;
+	gl_Position = pixelUnitEnablerMatrix(uViewportSizeInPixel)
+					*translationMatrix(uTranslation)
+					*rotationMatrix(uRotation)
+					*scaleMatrix(uScale)
+					*vec4(aVertexPosition, 1.0);
 
     vColor = vec4(aVertexColor, 1.0);
 }
@@ -389,8 +294,7 @@ void main(void) {
                 0.2/pN * i, 0.5/pN * i, 1.0/pN * i
             );
         }
-console.log('vPosition count : ', vArr.length / vertCoords);
-console.log('vColor count : ', vColorArr.length / vertCoords);
+
         vertexBuffer = gl.createBuffer(),
 		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer),
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vArr), gl.STATIC_DRAW),
