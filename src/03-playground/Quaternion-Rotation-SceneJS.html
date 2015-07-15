@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang='ko'>
+<head>
+<meta charset="UTF-8">
+<meta name="title" content="WebGL - Quaternion - SceneJS.js" />
+<meta name="subject" content="WebGL,Transformation,Dragging,Matrix,Vector" />
+<meta name="keywords" content="WebGL,Shader,Transformation,Dragging,Matrix,Vector" />
+<title>WebGL - 4원수 회전 - SceneJS.js</title>
+<style>
+.transValue {
+    width: 50px;
+}
+</style>
+</head>
+<body>
+<div id='propertyContainer'>
+	<label for='objDepth'>깊이 : </label><input class='slider' id='objDepth' type='range' min='0' max='200' value='0'><span id='pxDepth'>0</span>
+	<br/>
+	<label for='translateX'>X축 이동 : </label><input class='slider' id='translateX' type='range' min='-400' max='400' value='0'><input type='text' class='transValue' maxlength='5' value='0' id='TX' data-slider-id='translateX'/>
+	<label for='translateY'>Y축 이동 : </label><input class='slider' id='translateY' type='range' min='-200' max='200' value='0'><input type='text' class='transValue' maxlength='5' value='0' id='TY' data-slider-id='translateY'/>
+	<label for='translateZ'>Z축 이동 : </label><input class='slider' id='translateZ' type='range' min='-100' max='100' value='0'><input type='text' class='transValue' maxlength='5' value='0' id='TZ' data-slider-id='translateZ'/>
+	<br/>
+	<label for='rotateX'>X축 회전각 : </label><input class='slider' id='rotateX' type='range' min='-360' max='360' value='0'><input type='text' class='transValue' maxlength='5' value='0' id='RX' data-slider-id='rotateX'/>
+	<label for='rotateY'>Y축 회전각 : </label><input class='slider' id='rotateY' type='range' min='-360' max='360' value='0'><input type='text' class='transValue' maxlength='5' value='0' id='RY' data-slider-id='rotateY'/>
+	<label for='rotateZ'>Z축 회전각 : </label><input class='slider' id='rotateZ' type='range' min='-360' max='360' value='0'><input type='text' class='transValue' maxlength='5' value='0' id='RZ' data-slider-id='rotateZ'/>
+	<br/>
+	<label for='scaleX'>가로 확대 : </label><input class='slider' id='scaleX' type='range' min='0.0' max='4.0' value='1' step='0.1'><input type='text' class='transValue' maxlength='5' value='1' id='SX' data-slider-id='scaleX'/>
+	<label for='scaleY'>세로 확대 : </label><input class='slider' id='scaleY' type='range' min='0.0' max='4.0' value='1' step='0.1'><input type='text' class='transValue' maxlength='5' value='1' id='SY' data-slider-id='scaleY'/>
+	<label for='scaleZ'>깊이 확대 : </label><input class='slider' id='scaleZ' type='range' min='0.0' max='4.0' value='1' step='0.1'><input type='text' class='transValue' maxlength='5' value='1' id='SZ' data-slider-id='scaleZ'/>
+	<br/>
+	<label for='polygonN'>N각형 : </label><input class='slider' id='polygonN' type='range' min='3' max='16' value='8'><input type='text' class='transValue' maxlength='5' value='8' id='polyN' data-slider-id='polygonN'/>
+	<br/>
+	<label for='viewportWidth'>Viewport 너비 : </label><input id='viewportWidth' type='text' placeholder='viewport 너비를 픽셀 단위로 입력' value='800'>
+	<label for='viewportHeight'>Viewport 높이 : </label><input id='viewportHeight' type='text' placeholder='viewport 높이를 픽셀 단위 입력' value='400'>
+	<button id='btnRedraw'>다시 그리기</button>
+	<br/><br/>
+	<div>4원수 회전</div>
+</div>
+<br/>
+<canvas id="webgl-canvas" style="border: none;" width="800" height="400"></canvas>
+<hr/>
+<footer>
+  <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="크리에이티브 커먼즈 라이선스" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br /><a xmlns:cc="http://creativecommons.org/ns#" href="https://www.facebook.com/hanmomhanda" property="cc:attributionName" rel="cc:attributionURL" target='_blank'>hanmomhanda</a>의 저작물인 이 저작물은(는) <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target='_blank'>크리에이티브 커먼즈 저작자표시-비영리-동일조건변경허락 4.0 국제 라이선스</a>에 따라 이용할 수 있습니다.<br />
+  <hr/>
+  <!-- DISCUS -->
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+      /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+      var disqus_shortname = 'hanmomhanda'; // required: replace example with your forum shortname
+      /* * * DON'T EDIT BELOW THIS LINE * * */
+      (function() {
+          var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <!-- DISCUS -->
+</footer>
+<script id="shader-vs" type="x-shader/x-vertex">
+attribute vec3 aVertexPosition;
+
+attribute vec3 aVertexColor;
+
+uniform vec3 uViewportSizeInPixel;
+
+mat4 pixelUnitEnablerMatrix(vec3 vp) {
+	return mat4(
+		2.0/vp[0], 0, 0, 0,
+		0, 2.0/vp[1], 0, 0,
+		0, 0, 2.0/vp[2], 0,
+		0, 0, 0, 1
+	);
+}
+
+uniform vec3 uTranslation;
+
+mat4 translationMatrix(vec3 t) {
+	return mat4(
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		t[0], t[1], t[2], 1
+	);
+}
+
+uniform vec3 uRotation;
+
+mat4 rotationMatrix(vec3 r) {
+	// float s, c;
+
+	// // X축 회전
+	// s = sin(r[0]), c = cos(r[0]);
+	// mat4 m1 = mat4(
+	// 	 1,  0,  0,  0,
+	// 	 0,  c,  s,  0,
+	// 	 0, -s,  c,  0,
+	// 	 0,  0,  0,  1
+	// );
+	// // Y축 회전
+	// s = sin(r[1]), c = cos(r[1]);
+	// mat4 m2 = mat4(
+	// 	 c,  0, -s,  0,
+	// 	 0,  1,  0,  0,
+	// 	 s,  0,  c,  0,
+	// 	 0,  0,  0,  1
+	// );
+	// // Z축 회전
+	// s = sin(r[2]), c = cos(r[2]);
+	// mat4 m3 = mat4(
+	// 	 c,  s,  0,  0,
+	// 	-s,  c,  0,  0,
+	// 	 0,  0,  1,  0,
+	// 	 0,  0,  0,  1
+	// );
+
+	// return m3 * m2 * m1;
+
+        float cos0= cos(r[0]*0.5);
+        float cos1= cos(r[1]*0.5);
+        float cos2= cos(r[2]*0.5);
+        float sin0= sin(r[0]*0.5);
+        float sin1= sin(r[1]*0.5);
+        float sin2= sin(r[2]*0.5);
+        float w = cos2 * cos1 * cos0 + sin2 * sin1 * sin0;
+        float x = cos2 * cos1 * sin0 - sin2 * sin1 * cos0;
+        float y = cos2 * sin1 * cos0 + sin2 * cos1 * sin0;
+        float z = sin2 * cos1 * cos0 - cos2 * sin1 * sin0;
+        mat4 quaternionMTX = mat4(
+            pow(w, 2.0) + pow(x, 2.0) - pow(y, 2.0) - pow(z, 2.0), 2.0*(x*y + w*z), 2.0*(x*z - w*y), 0,
+            2.0*(x*y - w*z), pow(w, 2.0) - pow(x, 2.0) + pow(y, 2.0) - pow(z, 2.0), 2.0*(y*z + w*x), 0,
+            2.0*(x*z + w*y), 2.0*(y*z - w*x), pow(w, 2.0) - pow(x, 2.0) - pow(y, 2.0) + pow(z, 2.0), 0,
+            0, 0, 0, 1
+        );
+        return quaternionMTX;
+}
+
+vec4 getQuaternion(vec3 euler) {
+
+    float c0 = cos( euler[0] * 0.5 );
+    float c1 = cos( euler[1] * 0.5 );
+    float c2 = cos( euler[2] * 0.5 );
+    float s0 = sin( euler[0] * 0.5 );
+    float s1 = sin( euler[1] * 0.5 );
+    float s2 = sin( euler[2] * 0.5 );
+
+    // ZYX 기준
+    float x = s0 * c1 * c2 - c0 * s1 * s2;
+    float y = c0 * s1 * c2 + s0 * c1 * s2;
+    float z = c0 * c1 * s2 - s0 * s1 * c2;
+    float w = c0 * c1 * c2 + s0 * s1 * s2;
+
+    return vec4(x, y, z, w);
+
+
+    // if ( euler.order === 'XYZ' ) {
+
+    //     this._x = s1 * c2 * c3 + c1 * s2 * s3;
+    //     this._y = c1 * s2 * c3 - s1 * c2 * s3;
+    //     this._z = c1 * c2 * s3 + s1 * s2 * c3;
+    //     this._w = c1 * c2 * c3 - s1 * s2 * s3;
+
+    // } else if ( euler.order === 'YXZ' ) {
+
+    //     this._x = s1 * c2 * c3 + c1 * s2 * s3;
+    //     this._y = c1 * s2 * c3 - s1 * c2 * s3;
+    //     this._z = c1 * c2 * s3 - s1 * s2 * c3;
+    //     this._w = c1 * c2 * c3 + s1 * s2 * s3;
+
+    // } else if ( euler.order === 'ZXY' ) {
+
+    //     this._x = s1 * c2 * c3 - c1 * s2 * s3;
+    //     this._y = c1 * s2 * c3 + s1 * c2 * s3;
+    //     this._z = c1 * c2 * s3 + s1 * s2 * c3;
+    //     this._w = c1 * c2 * c3 - s1 * s2 * s3;
+
+    // } else if ( euler.order === 'ZYX' ) {
+
+    //     this._x = s1 * c2 * c3 - c1 * s2 * s3;
+    //     this._y = c1 * s2 * c3 + s1 * c2 * s3;
+    //     this._z = c1 * c2 * s3 - s1 * s2 * c3;
+    //     this._w = c1 * c2 * c3 + s1 * s2 * s3;
+
+    // } else if ( euler.order === 'YZX' ) {
+
+    //     this._x = s1 * c2 * c3 + c1 * s2 * s3;
+    //     this._y = c1 * s2 * c3 + s1 * c2 * s3;
+    //     this._z = c1 * c2 * s3 - s1 * s2 * c3;
+    //     this._w = c1 * c2 * c3 - s1 * s2 * s3;
+
+    // } else if ( euler.order === 'XZY' ) {
+
+    //     this._x = s1 * c2 * c3 - c1 * s2 * s3;
+    //     this._y = c1 * s2 * c3 - s1 * c2 * s3;
+    //     this._z = c1 * c2 * s3 + s1 * s2 * c3;
+    //     this._w = c1 * c2 * c3 + s1 * s2 * s3;
+
+    // }
+}
+
+vec4 applyQuaternion(vec4 quat, vec4 vertex) {
+    float x = vertex[0];
+    float y = vertex[1];
+    float z = vertex[2];
+
+    float qx = quat[0];
+    float qy = quat[1];
+    float qz = quat[2];
+    float qw = quat[2];
+
+    // calculate quat * vector
+    float ix =  qw * x + qy * z - qz * y;
+    float iy =  qw * y + qz * x - qx * z;
+    float iz =  qw * z + qx * y - qy * x;
+    float iw = - qx * x - qy * y - qz * z;
+
+    // calculate result * inverse quat
+    float rx = ix * qw + iw * - qx + iy * - qz - iz * - qy;
+    float ry = iy * qw + iw * - qy + iz * - qx - ix * - qz;
+    float rz = iz * qw + iw * - qz + ix * - qy - iy * - qx;
+
+    return vec4(rx, ry, rz, 1.0);
+}
+
+uniform vec3 uScale;
+
+mat4 scaleMatrix(vec3 s) {
+	return mat4(
+		s[0], 0, 0, 0,
+		0, s[1], 0, 0,
+		0, 0, s[2], 0,
+		0, 0, 0, 1
+	);
+}
+
+varying highp vec4 vColor;
+
+void main(void) {
+	// gl_Position = pixelUnitEnablerMatrix(uViewportSizeInPixel)
+	// 				*translationMatrix(uTranslation)
+	// 				*rotationMatrix(uRotation)
+	// 				*scaleMatrix(uScale)
+	// 				*vec4(aVertexPosition, 1.0);
+
+    vec4 scaled = scaleMatrix(uScale) * vec4(aVertexPosition, 1.0);
+    vec4 quat = getQuaternion(uRotation);
+    vec4 qRotated = applyQuaternion(quat, scaled);
+
+    gl_Position = pixelUnitEnablerMatrix(uViewportSizeInPixel)
+                    *translationMatrix(uTranslation)
+                    *qRotated;
+
+    vColor = vec4(aVertexColor, 1.0);
+}
+</script>
+<script id="shader-fs" type="x-shader/x-fragment">
+varying highp vec4 vColor;
+
+void main(void) {
+    gl_FragColor = vColor;
+}
+</script>
+<script>
+;(function() {
+	var drawWebGL = function(canvas, x, y, z) {
+		var canvas, gl, shaderProgram,
+			tX, tY, tZ,
+			depth,
+			rX, rY, rZ, _RADIAN = Math.PI/180,
+			sX, sY, sZ,
+			beginMode, pN
+		;
+		// canvas = document.getElementById("webgl-canvas"),
+		gl = getWebGLContext(canvas),
+		initViewport(gl, canvas),
+		shaderProgram = getShaderProgram(gl, getShader(gl, "shader-vs"), getShader(gl, "shader-fs")),
+
+		tX = x ? x : parseFloat(document.getElementById('translateX').value),
+		tY = y ? y : parseFloat(document.getElementById('translateY').value),
+		tZ = z ? z : parseFloat(document.getElementById('translateZ').value),
+		depth = parseInt(document.getElementById('objDepth').max) - parseInt(document.getElementById('objDepth').min),
+
+		rX = parseFloat(document.getElementById('rotateX').value)*_RADIAN,
+		rY = parseFloat(document.getElementById('rotateY').value)*_RADIAN,
+		rZ = parseFloat(document.getElementById('rotateZ').value)*_RADIAN,
+
+		sX = parseFloat(document.getElementById('scaleX').value),
+		sY = parseFloat(document.getElementById('scaleY').value),
+		sZ = parseFloat(document.getElementById('scaleZ').value),
+
+		pN = parseInt(document.getElementById('polygonN').value),
+
+		draw(gl, createRegularPolygon(gl, pN),
+			[gl.drawingBufferWidth, gl.drawingBufferHeight, depth],
+			[tX, tY, tZ],
+			[rX, rY, rZ],
+			[sX, sY, sZ],
+			shaderProgram
+		);
+	},
+
+	getWebGLContext = function(canvas) {
+		var gl, ctxList = ['moz-webgl', 'webkit-3d', 'experimental-webgl', 'webgl'], l = ctxList.length,
+			msg = "Your browser does not support WebGL, or it is not enabled by default.";
+		try {
+			while(l--) {
+				if (gl = canvas.getContext(ctxList[l]))
+					break;
+			}
+		} catch (e) {
+			msg = "Error creating WebGL Context!: " + e.toString();
+		}
+
+		if (!gl) {
+			alert(msg);
+			throw new Error(msg);
+		}
+
+		return gl;
+	},
+
+	initViewport = function(gl, canvas) {
+		canvas.width = document.getElementById('viewportWidth').value,
+		canvas.height = document.getElementById('viewportHeight').value,
+		gl.viewport(0, 0, canvas.width, canvas.height),
+		gl.clearColor(0.3, 0.3, 0.3, 1.0),
+		gl.clear(gl.COLOR_BUFFER_BIT);
+	},
+
+	getShader = function(gl, id) {
+		var shaderScript = document.getElementById(id),
+			shader;
+
+		if (!shaderScript) {
+			return null;
+		}
+
+		if (shaderScript.type == "x-shader/x-fragment") {
+			shader = gl.createShader(gl.FRAGMENT_SHADER);
+		} else if (shaderScript.type == "x-shader/x-vertex") {
+			shader = gl.createShader(gl.VERTEX_SHADER);
+		} else {
+			return null;
+		}
+
+		gl.shaderSource(shader, shaderScript.textContent);
+		gl.compileShader(shader);
+
+		if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+			alert(gl.getShaderInfoLog(shader));
+			return null;
+		}
+
+		return shader;
+	},
+
+	getShaderProgram = function(gl, vShader, fShader) {
+		var shaderProgram = gl.createProgram();
+
+		gl.attachShader(shaderProgram, vShader);
+		gl.attachShader(shaderProgram, fShader);
+		gl.linkProgram(shaderProgram);
+
+		if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+			alert("Could not initialise shaders");
+			gl.deleteProgram(shaderProgram);
+			gl.deleteProgram(vertexShader);
+			gl.deleteProgram(fragmentShader);
+			return null;
+		}
+
+		return shaderProgram;
+	},
+
+	createRegularPolygon = function(gl, pN) {
+		var vertexBuffer, vertexColorBuffer,
+			coreHeight = 100, i,
+			d = parseFloat(document.getElementById('objDepth').value),
+			polygon, vArr = [ 0.0, coreHeight, d ], vColorArr = [ 1.0, 0.0, 0.0 ], vertCoords = 3,
+			c = Math.cos, s = Math.sin, mRound = Math.round,
+			_PI = Math.PI, _RADIAN = _PI/180, angle = 2*_PI/pN
+		;
+		for ( i = 0 ; i < pN - 1 ; i= i/vertCoords + 1 ) {
+		 	vArr.push(
+		 		vArr[i*=vertCoords]*c(angle) - vArr[++i]*s(angle),
+		 		vArr[--i]*s(angle) + vArr[++i]*c(angle),
+		 		vArr[--i+2]
+		 	);
+
+
+		}
+        for ( i = 1 ; i < pN ; i++ ) {
+            vColorArr.push(
+                0.2/pN * i, 0.5/pN * i, 1.0/pN * i
+            );
+        }
+
+        vertexBuffer = gl.createBuffer(),
+		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer),
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vArr), gl.STATIC_DRAW),
+
+        vertexColorBuffer = gl.createBuffer(),
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexColorBuffer),
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vColorArr), gl.STATIC_DRAW),
+
+        polygon = {
+            vertexBuffer : vertexBuffer,
+            vertexColorBuffer : vertexColorBuffer,
+            vertCoords : vertCoords,
+            nVerts : pN,
+            primtype : gl.TRIANGLE_FAN
+        };
+
+		return polygon;
+	},
+
+	draw = function(gl, objToDraw, viewportSizeArray,
+					translationArray, rotationArray, scaleArray, shaderProgram) {
+
+
+		gl.useProgram(shaderProgram);
+
+		shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition"),
+		gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute),
+
+        shaderProgram.vertexColorAttribute = gl.getAttribLocation(shaderProgram, "aVertexColor"),
+        gl.enableVertexAttribArray(shaderProgram.vertexColorAttribute),
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, objToDraw.vertexBuffer),
+		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, objToDraw.vertCoords, gl.FLOAT, false, 0, 0),
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, objToDraw.vertexColorBuffer),
+        gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, objToDraw.vertCoords, gl.FLOAT, false, 0, 0),
+
+		shaderProgram.viewportSizeUniform = gl.getUniformLocation(shaderProgram, "uViewportSizeInPixel"),
+		gl.uniform3fv(shaderProgram.viewportSizeUniform, viewportSizeArray),
+
+		shaderProgram.translationUniform = gl.getUniformLocation(shaderProgram, "uTranslation"),
+		gl.uniform3fv(shaderProgram.translationUniform, translationArray),
+
+		shaderProgram.rotationUniform = gl.getUniformLocation(shaderProgram, "uRotation"),
+		gl.uniform3fv(shaderProgram.rotationUniform, rotationArray),
+
+		shaderProgram.scaleUniform = gl.getUniformLocation(shaderProgram, "uScale");
+		gl.uniform3fv(shaderProgram.scaleUniform, scaleArray);
+
+		gl.drawArrays(objToDraw.primtype, 0, objToDraw.nVerts);
+	};
+
+	(function () {
+		var canvas = document.getElementById("webgl-canvas"),
+			canvasB = canvas.getBoundingClientRect(),
+			x, y,
+			mousedown;
+
+		drawWebGL(canvas),
+
+		Array.prototype.slice.call(document.querySelectorAll('.slider'))
+			.forEach( function( element ) {
+				var sliderHandler = function(element) {
+					drawWebGL(canvas, x, y, 0),
+					// element.nextSibling.innerHTML = element.value;
+                    element.nextSibling.value = element.value;
+				};
+				element.addEventListener('input', function() {
+					sliderHandler(element);
+				});
+				if ( "ActiveXObject" in window ) {
+					element.addEventListener('change', function() {
+						sliderHandler(element);
+					});
+				}
+			}),
+
+        Array.prototype.slice.call(document.querySelectorAll('.transValue'))
+            .forEach( function( element ) {
+                element.addEventListener('change', function() {
+                    var sliderId = element.getAttribute('data-slider-id');
+                    document.getElementById(sliderId).value = element.value;
+                    drawWebGL(canvas, x, y, 0);
+                });
+            }),
+
+		canvas.addEventListener('mousedown', function(e) {
+			mousedown = true;
+		}),
+
+		canvas.addEventListener('mouseup', function(e) {
+			mousedown = false;
+		}),
+
+		canvas.addEventListener('mousemove', function(e) {
+			if (mousedown) {
+				x = e.clientX - canvasB.left - canvasB.width/2,
+				y = canvasB.height/2 - (e.clientY - canvasB.top),
+				drawWebGL(canvas, x, y, 0);
+			}
+		}),
+
+		document.getElementById('btnRedraw').addEventListener('click', function() {
+			drawWebGL(canvas);
+		});
+	})();
+})();
+</script>
+</body>
+</html>
